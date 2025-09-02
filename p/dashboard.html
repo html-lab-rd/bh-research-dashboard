@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biohorizons Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #f58025;
+            --secondary-color: #ef5125;
+            --complement-1: #262223;
+            --complement-2: #FFE8A1;
+            
+            --text: #262223;
+            --text-light: #6b7280;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --border-color: #e5e7eb;
+        }
+
+        .dark-mode {
+            --text: #f7fafc;
+            --text-light: #a0aec0;
+            --bg: #1a202c;
+            --card-bg: #2d3748;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.2);
+            --border-color: #4a5568;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+
+.html {
+            overflow-x: hidden; 
+            scroll-behavior: smooth; 
+}
+
+
+
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: background-color 0.3s, border-color 0.3s, width 0.3s ease-in-out;
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            min-height: 73px;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+        }
+
+        .dark-mode .logo {
+             filter: invert(1) hue-rotate(180deg) brightness(1.2) contrast(0.8);
+        }
+
+        .nav-menu {
+            flex-grow: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            margin: 0.3rem 1rem;
+            color: var(--text-light);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.2s, color 0.2s;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+        .nav-item:hover i {
+             color: #fff !important;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            color: #fff;
+            box-shadow: 0 4px 10px -2px rgba(245, 128, 37, 0.5);
+        }
+
+
+        .nav-item.active i {
+            color: #fff !important;
+        }
+
+        
+        .nav-item i {
+            margin-right: 2.2rem; /* Increased from 1.7rem to add more space */
+            width: 22px;
+            height: 22px;
+            color: var(--text-light);
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .user-profile:hover {
+             background-color: var(--border-color);
+        }
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            object-fit: cover;
+        }
+        .user-info h4 {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            color: var(--text);
+        }
+        .user-info p {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            white-space: nowrap;
+        }
+
+        .theme-toggle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .theme-switch-wrapper { display: flex; align-items: center; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 44px; }
+        .theme-switch input { display:none; }
+        .slider {
+            background-color: #ccc; position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0; transition: .4s; border-radius: 24px;
+        }
+        .slider:before {
+            background-color: #fff; position: absolute; content: "";
+            height: 16px; width: 16px; left: 4px; bottom: 4px;
+            transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .theme-toggle i { margin: 0 0.5rem; color: var(--text-light); width: 20px; }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .content-section iframe {
+            width: 100%;
+            height: calc(100vh - 4rem);
+            border: none;
+            border-radius: 12px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .welcome-message {
+             font-size: 1.3rem;
+             font-weight: 700;
+             margin-bottom: 2rem;
+        }
+
+        .date-time {
+            background-color: var(--card-bg); padding: 0.5rem 1rem;
+            border-radius: 8px; box-shadow: var(--shadow);
+            font-weight: 500; color: var(--text-light); white-space: nowrap;
+        }
+        
+        /* Banners */
+        .dashboard-banner, .section-banner {
+            height: 150px;
+            background-image: url('https://bucket.mlcdn.com/a/3336/3336910/images/00eaeb3a7f94b417c1df5b0b97aa164a34a2ed97.png');
+            background-size: cover; background-position: center; border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+         .section-banner {
+            margin-bottom: 2rem;
+         }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+width: 100%;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg); padding: 1.5rem;
+            border-radius: 12px; box-shadow: var(--shadow); display: flex; align-items: center;
+        }
+        .stat-card .icon {
+            width: 50px; height: 50px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            margin-right: 1rem; flex-shrink: 0;
+        }
+        .stat-card .icon.primary { background-color: rgba(245, 128, 37, 0.1); color: var(--primary-color); }
+        .stat-card .icon.secondary { background-color: rgba(239, 81, 37, 0.1); color: var(--secondary-color); }
+        .stat-card .icon.complement-1 { background-color: rgba(38, 34, 35, 0.1); color: var(--complement-1); }
+        .stat-card .icon.complement-2 { background-color: rgba(255, 232, 161, 0.2); color: #c8a12d; }
+        
+        .stat-card .info h3 { font-size: 2.2rem; font-weight: 700; }
+        .stat-card .info p { color: var(--text-light); font-size: 0.9rem; }
+        .stat-card .icon i { width: 24px; height: 24px; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        
+
+
+.chart-container {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            padding-bottom: 60px !important;
+            border-radius: 12px; box-shadow: var(--shadow);
+            max-height: 480px;
+        }
+
+
+
+        .leaderboard-container {
+            background-color: var(--card-bg); padding: 1.5rem;
+            border-radius: 12px; box-shadow: var(--shadow);
+        }
+        
+        .container-header, .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .container-header h2, .card-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0;
+            flex-grow: 1;
+        }
+        
+        .leaderboard-list .leader-item {
+            display: flex; align-items: center; margin-bottom: 1rem;
+            padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);
+        }
+        .leaderboard-list .leader-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .leader-item img {
+            width: 40px; height: 40px; border-radius: 8px;
+            margin-right: 1rem; object-fit: contain;
+        }
+        .leader-item .leader-info { flex-grow: 1; }
+        .leader-item .leader-info h4 { font-weight: 600; }
+        .leader-item .leader-info p { color: var(--text-light); font-size: 0.85rem; }
+        .leader-item .leader-score { font-size: 1.1rem; font-weight: 700; color: var(--primary-color); }
+        
+        .content-card {
+            background-color: var(--card-bg); padding: 2rem;
+            border-radius: 12px; box-shadow: var(--shadow);
+        }
+        .content-card h3 { margin-bottom: 1rem; font-weight: 600; }
+        .content-card p, .content-card li { line-height: 1.7; color: var(--text-light); margin-bottom: 1rem; }
+        .content-card ul, .content-card ol { padding-left: 1.5rem; }
+
+        .download-pdf-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: transparent;
+            color: var(--text-light);
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .download-pdf-btn:hover { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .download-pdf-btn i { width: 18px; height: 18px; }
+
+        /* Competitor Table */
+        .competitor-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 2rem; 
+            overflow: hidden; /* Ensures border-radius is respected */
+            border-radius: 8px;
+        }
+        .competitor-table th, .competitor-table td {
+            padding: 0.8rem 1rem; text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .competitor-table th { 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border-bottom: 1px solid var(--primary-color);
+        }
+        .competitor-table tr:last-child td { border-bottom: none; }
+        .competitor-table tbody tr:nth-child(even) {
+            background-color: var(--bg);
+        }
+        .dark-mode .competitor-table tbody tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+
+        #plotly-map-container { min-height: 550px; margin-top: 2rem; }
+
+        .modal {
+            display: none; position: fixed; z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0,0,0,0.5);
+            -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: var(--card-bg); margin: 15% auto;
+            padding: 2rem; border: 1px solid var(--border-color);
+            width: 80%; max-width: 500px; border-radius: 12px;
+            box-shadow: var(--shadow); position: relative;
+        }
+        .close-button {
+            color: var(--text-light); position: absolute;
+            top: 1rem; right: 1.5rem; font-size: 28px;
+            font-weight: bold; cursor: pointer;
+        }
+        .close-button:hover, .close-button:focus { color: var(--text); }
+        
+        .modal-content h2 { margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-light); }
+        .form-group input {
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border-color);
+            border-radius: 8px; background-color: var(--bg); color: var(--text); font-size: 1rem;
+        }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+        .modal-buttons button { padding: 0.75rem 1.5rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-save { background-color: var(--primary-color); color: white; }
+        .btn-cancel { background-color: var(--border-color); color: var(--text); }
+        
+        /* Footer */
+        .bebell-footer { text-align: center; margin-top: 3rem; font-size: 0.9rem; color: var(--text-light); }
+        .heart { color: #e25555; display: inline-block; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+        .bebell-link { color: var(--primary-color); text-decoration: none; font-weight: 500; }
+
+
+        @media (max-width: 1200px) { 
+            .dashboard-grid { grid-template-columns: 1fr; } 
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar:hover { width: 260px; }
+            .sidebar .logo, .sidebar .nav-item span, .sidebar .theme-toggle i, .sidebar .user-info { display: none; }
+            .sidebar:hover .logo, .sidebar:hover .nav-item span, .sidebar:hover .theme-toggle i, .sidebar:hover .user-info { display: inline-block; }
+            .sidebar .nav-item { justify-content: center; }
+            .sidebar .sidebar-header { padding: 1.5rem 0; }
+            .sidebar:hover .nav-item { justify-content: flex-start; }
+            .sidebar .nav-item i { margin-right: 0; }
+            .sidebar:hover .nav-item i { margin-right: 2.2rem; } /* Fixed: Changed from 1.7rem to 2.2rem */
+            .main-content { margin-left: 70px; padding: 1rem; }
+            .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .stat-card .info h3 { font-size: 1.5rem; }
+            .modal-content { width: 90%; margin: 25% auto; }
+        }
+         @media (max-width: 640px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+
+    </style>
+
+
+
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img src="https://cdn.shopify.com/s/files/1/0242/0175/6777/files/imgi_19_BioHorizons-logo.svg?v=1756766875" alt="Biohorizons Logo" class="logo">
+        </div>
+        <div class="nav-menu">
+            
+
+<a href="#dashboard" class="nav-item active"><i data-lucide="layout-dashboard" style="margin-right: 10px;"></i><span>Dashboard</span></a>
+            
+
+<a href="#market-research" class="nav-item"><i data-lucide="bar-chart-2" style="margin-right: 10px;"></i><span>Market Research</span></a>
+            
+
+<a href="#competitor-analysis" class="nav-item"><i data-lucide="shield" style="margin-right: 10px;"></i><span>Competitor Analysis</span></a>
+            
+
+<a href="#swot-analysis" class="nav-item"><i data-lucide="scale" style="margin-right: 10px;"></i><span>  SWOT Analysis</span></a>
+            
+
+<a href="#sales-strategies" class="nav-item"><i data-lucide="lightbulb" style="margin-right: 10px;"></i><span>  Sales Strategies</span></a>
+            
+
+<a href="#competitor-contacts" class="nav-item"><i data-lucide="contact" style="margin-right: 10px;"></i><span>Competitor Contacts</span></a>
+            
+
+<a href="#research-tools" class="nav-item"><i data-lucide="flask-conical" style="margin-right: 10px;"></i><span>Research Tools</span></a>
+            
+
+<a href="#ai-assistant" class="nav-item" style="margin-right:10px;"><i data-lucide="bot" style="margin-right: 10px;"></i><span>AI Sales Assistant</span></a>
+        
+
+</div>
+        <div class="sidebar-footer">
+             <div class="user-profile" id="user-profile-button">
+                <img src="https://bucket.mlcdn.com/a/3336/3336910/images/8d6b38eb00c4082545de20b0f8d5de3009ccf01a.png" alt="Ron Dubois" id="user-avatar">
+                <div class="user-info">
+                    <h4 id="user-name">Ron Dubois</h4>
+                    <p id="user-id">ID: 12345</p>
+                </div>
+            </div>
+
+
+
+
+            <div class="theme-toggle-container">
+                <div class="theme-toggle">
+                    <i><i data-lucide="sun"></i></i>
+                    <div class="theme-switch-wrapper">
+                        <label class="theme-switch" for="checkbox">
+                            <input type="checkbox" id="checkbox" />
+                            <div class="slider round"></div>
+                        </label>
+                    </div>
+                    <i><i data-lucide="moon"></i></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section id="dashboard" class="content-section active">
+            <div class="header">
+                <h1>Dashboard</h1>
+                <div id="date-time" class="date-time"></div>
+            </div>
+            <div class="dashboard-banner"></div>
+            <h2 class="welcome-message">Welcome Back, <span id="welcome-username">Ron</span>!</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon primary"><i data-lucide="trending-up"></i></div>
+                    <div class="info"><h3>$2.12B</h3><p>Market Size 2025</p></div>
+                </div>
+                 <div class="stat-card">
+                    <div class="icon secondary"><i data-lucide="line-chart"></i></div>
+                    <div class="info"><h3>7.1%</h3><p>CAGR (5 Years)</p></div>
+                </div>
+                 <div class="stat-card">
+                    <div class="icon complement-2"><i data-lucide="pie-chart"></i></div>
+                    <div class="info"><h3>4.0%</h3><p>Biohorizons Share</p></div>
+                </div>
+                 <div class="stat-card">
+                    <div class="icon complement-1"><i data-lucide="users"></i></div>
+                    <div class="info"><h3>12</h3><p>Key Competitors</p></div>
+                </div>
+            </div>
+
+
+            <div class="dashboard-grid">
+                <div class="chart-container">
+                    <div class="container-header"><h2>Market Projections</h2></div>
+                    <canvas id="marketProjectionsChart"></canvas>
+                </div>
+
+
+
+
+
+                <div class="leaderboard-container">
+                    <div class="container-header"><h2>Industry Leaderboard</h2></div>
+                    <div class="leaderboard-list">
+                         <div class="leader-item"><img src="https://bucket.mlcdn.com/a/3336/3336910/images/4d1ac06d897219b7d0714095118207ef72a82d64.png" alt="Straumann logo"><div class="leader-info"><h4>Institut Straumann</h4><p>Market Share</p></div><div class="leader-score">~35%</div></div>
+                         <div class="leader-item"><img src="https://bucket.mlcdn.com/a/3336/3336910/images/916762ece536c454bc76fadb83c8a6f957e65f36.png" alt="Dentsply Sirona logo"><div class="leader-info"><h4>Dentsply Sirona</h4><p>Market Share</p></div><div class="leader-score">~25%</div></div>
+                         <div class="leader-item"><img src="https://bucket.mlcdn.com/a/3336/3336910/images/8d00b4c91ec330968e66970d840e427766c14ce4.png" alt="Zimmer Biomet logo"><div class="leader-info"><h4>Zimmer Biomet</h4><p>Market Share</p></div><div class="leader-score">~15%</div></div>
+                         <div class="leader-item"><img src="https://bucket.mlcdn.com/a/3336/3336910/images/113494d1ea3b5526bcff85b6649c4be1d9acfaa7.png" alt="Nobel Biocare logo"><div class="leader-info"><h4>Nobel Biocare</h4><p>Market Share</p></div><div class="leader-score">~10%</div></div>
+                         <div class="leader-item"><img src="https://bucket.mlcdn.com/a/3336/3336910/images/057ebdb21ecc1b4dbfcea5c91348f7972dcf6f35.png" alt="BioHorizons logo"><div class="leader-info"><h4>BioHorizons</h4><p>Market Share</p></div><div class="leader-score">~5%</div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="market-research" class="content-section">
+            <div class="section-banner"></div>
+            <div class="content-card" id="market-research-card">
+                <div class="card-header">
+                    <h2>U.S. Dental Implant Market Overview (2025)</h2>
+                    <button class="download-pdf-btn" data-target="market-research-card" data-filename="Market-Research-Report.pdf"><i data-lucide="download"></i><span>Download PDF</span></button>
+                </div>
+                <p>The United States dental implant market is valued at approximately $2.12 billion in 2025 and is projected to grow at a CAGR of around 7.1% over the next five years. This growth is driven by an aging population, rising disposable incomes, and increasing awareness of advanced dental solutions.</p>
+                <h3>Competitor Snapshot</h3>
+                <table class="competitor-table">
+                    <thead><tr><th>Competitor</th><th>Est. Market Share</th><th>Key Strength</th><th>Primary Segment</th></tr></thead>
+                    <tbody>
+                        <tr><td>Institut Straumann</td><td>~35%</td><td>Premium quality, strong brand</td><td>Premium</td></tr>
+                        <tr><td>Dentsply Sirona</td><td>~25%</td><td>Comprehensive digital workflow</td><td>Full Portfolio</td></tr>
+                        <tr><td>Zimmer Biomet (ZimVie)</td><td>~15%</td><td>Orthopedic device expertise</td><td>Premium/Orthopedic</td></tr>
+                        <tr><td>Nobel Biocare (Danaher)</td><td>~10%</td><td>Innovation (e.g., All-on-4®)</td><td>Premium</td></tr>
+                        <tr><td>BioHorizons</td><td>~5%</td><td>Strong distribution, value</td><td>Mid-range</td></tr>
+                    </tbody>
+                </table>
+                <div id="plotly-map-container"></div>
+            </div>
+        </section>
+
+        <section id="competitor-analysis" class="content-section">
+            <div class="section-banner"></div>
+            <div class="content-card" id="competitor-analysis-card">
+                 <div class="card-header">
+                    <h2>Major Market Players</h2>
+                    <button class="download-pdf-btn" data-target="competitor-analysis-card" data-filename="Competitor-Analysis.pdf"><i data-lucide="download"></i><span>Download PDF</span></button>
+                </div>
+                <ul><li><strong>Institut Straumann AG:</strong> Market leader with ~35% share, known for its premium products and strong brand reputation.</li><li><strong>Dentsply Sirona:</strong> Holds ~25% market share, offering a comprehensive portfolio of dental products and digital solutions.</li></ul>
+            </div>
+        </section>
+
+        <section id="swot-analysis" class="content-section">
+            <div class="section-banner"></div>
+            <div class="content-card" id="swot-analysis-card">
+                 <div class="card-header">
+                    <h2>Biohorizons: SWOT</h2>
+                    <button class="download-pdf-btn" data-target="swot-analysis-card" data-filename="SWOT-Analysis.pdf"><i data-lucide="download"></i><span>Download PDF</span></button>
+                </div>
+                <p>A comprehensive SWOT analysis is crucial for strategic planning.</p>
+                <h3>Strengths:</h3><p>Strong distribution network through Henry Schein, reputation for quality in the mid-market segment, and a loyal customer base.</p>
+             </div>
+        </section>
+
+        <section id="sales-strategies" class="content-section">
+            <div class="section-banner"></div>
+            <div class="content-card" id="sales-strategies-card">
+                 <div class="card-header">
+                    <h2>Key Strategic Initiatives</h2>
+                    <button class="download-pdf-btn" data-target="sales-strategies-card" data-filename="Sales-Strategies.pdf"><i data-lucide="download"></i><span>Download PDF</span></button>
+                </div>
+                <ol><li><strong>Strengthen Digital Workflow Integration:</strong> Develop and promote seamless integration with leading digital scanners and CAD/CAM systems.</li></ol>
+            </div>
+        </section>
+
+
+
+
+
+
+
+
+
+
+
+
+        <section id="competitor-contacts" class="content-section">
+            <div class="section-banner"></div>
+             <div class="content-card" id="competitor-contacts-card">
+                 <div class="card-header">
+                    <h2>Leadership Information (Publicly Available)</h2>
+                    <button class="download-pdf-btn" data-target="competitor-contacts-card" data-filename="Competitor-Contacts.pdf"><i data-lucide="download"></i><span>Download PDF</span></button>
+                </div>
+                <ul><li><strong>Institut Straumann AG:</strong> Guillaume Daniellot (CEO)</li></ul>
+            </div>
+        </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <section id="research-tools" class="content-section">
+            <iframe src="https://www.google.com/search?igu=1&q=dental+implant+market+research"></iframe>
+        </section>
+
+
+
+
+
+        <section id="ai-assistant" class="content-section">
+            <iframe src="https://asistente.chatterbot.support/share/bc486095c0d74bf0b7846a1b891e02d1"></iframe>
+        </section>
+
+
+
+
+
+
+        
+        <div class="bebell-footer">
+            <p>Developed with <span class="heart">💖</span> by <a href="https://bebelldigitals.com" class="bebell-link" target="_blank" rel="noopener">Bebell Digital Solutions</a>.</p>
+        </div>
+    </main>
+
+
+
+
+
+
+
+
+    <div id="profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span><h2>Edit Profile</h2>
+            <div class="form-group"><label for="edit-name">Name</label><input type="text" id="edit-name" placeholder="Enter your name"></div>
+            <div class="form-group"><label for="edit-avatar-url">Avatar Image URL</label><input type="text" id="edit-avatar-url" placeholder="https://example.com/image.png"></div>
+            <div class="modal-buttons"><button class="btn-cancel">Cancel</button><button class="btn-save">Save Changes</button></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            lucide.createIcons();
+            
+            const navLinks = document.querySelectorAll('.nav-item');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector('.nav-item.active')?.classList.remove('active');
+                    this.classList.add('active');
+                    const targetId = this.getAttribute('href').substring(1);
+                    document.querySelector('.content-section.active')?.classList.remove('active');
+                    document.getElementById(targetId)?.classList.add('active');
+                    if (targetId === 'market-research') {
+                        // Use a short timeout to ensure the container is visible before resizing
+                        setTimeout(() => {
+                            Plotly.Plots.resize('plotly-map-container');
+                        }, 10);
+                    }
+                });
+            });
+            
+            const themeToggle = document.getElementById('checkbox');
+            const body = document.body;
+            themeToggle.addEventListener('change', function() {
+                body.classList.toggle('dark-mode'); updateChartColors(); renderPlotlyMap();
+            });
+
+            const dateTimeElement = document.getElementById('date-time');
+            function updateDateTime() {
+                const now = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                if(dateTimeElement) { dateTimeElement.textContent = now.toLocaleDateString('en-US', options); }
+            }
+            setInterval(updateDateTime, 1000); updateDateTime();
+            
+            let marketChart;
+            const chartData = {
+                labels: [2024, 2025, 2026, 2027, 2028, 2029, 2030],
+                datasets: [{
+                    label: 'Market Size (USD Billion)', data: [4.79, 5.06, 5.41, 5.78, 6.18, 6.61, 7.08],
+                    borderColor: '#f58025', backgroundColor: 'rgba(245, 128, 37, 0.1)', fill: true, tension: 0.4
+                }, {
+                    label: 'Biohorizons Revenue (USD Million)', data: [400, 420, 445, 472, 501, 532, 566],
+                    borderColor: '#ef5125', backgroundColor: 'rgba(239, 81, 37, 0.1)', fill: true, tension: 0.4
+                }]
+            };
+            function getChartOptions() {
+                const isDarkMode = body.classList.contains('dark-mode');
+                const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                const textColor = isDarkMode ? '#f7fafc' : '#262223';
+                return { responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } }, x: { grid: { color: gridColor }, ticks: { color: textColor } } },
+                    plugins: { legend: { labels: { color: textColor } } }
+                };
+            }
+            function renderChart() {
+                 const ctx = document.getElementById('marketProjectionsChart').getContext('2d');
+                 marketChart = new Chart(ctx, { type: 'line', data: chartData, options: getChartOptions() });
+            }
+            function updateChartColors() { if (marketChart) { marketChart.options = getChartOptions(); marketChart.update(); } }
+            
+            function renderPlotlyMap() {
+                const isDarkMode = body.classList.contains('dark-mode');
+                const mapData = [{
+                    type: 'choropleth', locationmode: 'USA-states',
+                    locations: ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'],
+                    z: [5, 1, 1, 5, 1, 2, 2, 2, 1, 5, 1, 4, 2, 3, 3, 3, 3, 5, 2, 2, 2, 3, 3, 5, 3, 4, 3, 1, 2, 2, 4, 2, 5, 3, 3, 4, 4, 2, 2, 5, 3, 5, 4, 4, 2, 2, 4, 3, 3, 4],
+                    text: ['BioHorizons', 'Straumann', 'Straumann', 'BioHorizons', 'Straumann', 'Dentsply Sirona', 'Dentsply Sirona', 'Dentsply Sirona', 'Straumann', 'BioHorizons', 'Straumann', 'Zimmer Biomet', 'Dentsply Sirona', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'BioHorizons', 'Dentsply Sirona', 'Dentsply Sirona', 'Dentsply Sirona', 'Zimmer Biomet', 'Zimmer Biomet', 'BioHorizons', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'Straumann', 'Dentsply Sirona', 'Dentsply Sirona', 'Zimmer Biomet', 'Dentsply Sirona', 'BioHorizons', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'Dentsply Sirona', 'Dentsply Sirona', 'BioHorizons', 'Zimmer Biomet', 'BioHorizons', 'Zimmer Biomet', 'Zimmer Biomet', 'Dentsply Sirona', 'Dentsply Sirona', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet'],
+                    colorscale: [[0, '#FADBD8'], [0.25, '#F5B7B1'], [0.5, '#F1948A'], [0.75, '#EC7063'], [1, '#E74C3C']],
+                    colorbar: { 
+                        title: 'Competitor Index', 
+                        ticks: '',
+                        orientation: 'h',
+                        y: -0.15,
+                        yanchor: 'top'
+                    },
+                    marker: { line: { color: isDarkMode ? '#1a202c' : 'rgb(255,255,255)', width: 2 } }
+                }];
+                const layout = { 
+                    geo: { scope: 'usa', showlakes: true, lakecolor: isDarkMode ? '#1a202c' : 'rgb(255, 255, 255)' }, 
+                    paper_bgcolor: isDarkMode ? '#2d3748' : '#ffffff', 
+                    font: { color: isDarkMode ? '#f7fafc' : '#262223' }, 
+                    margin: { t: 0, b: 0, l: 0, r: 0 } 
+                };
+                Plotly.newPlot('plotly-map-container', mapData, layout, { responsive: true });
+            }
+            
+            const modal = document.getElementById('profile-modal');
+            const openModalBtn = document.getElementById('user-profile-button');
+            const closeModalBtn = modal.querySelector('.close-button');
+            const cancelBtn = modal.querySelector('.btn-cancel');
+            const saveBtn = modal.querySelector('.btn-save');
+            const nameInput = document.getElementById('edit-name');
+            const avatarUrlInput = document.getElementById('edit-avatar-url');
+            const currentNameElem = document.getElementById('user-name');
+            const welcomeNameElem = document.getElementById('welcome-username');
+            const currentAvatarElem = document.getElementById('user-avatar');
+
+            function loadUserProfile() {
+                const savedName = localStorage.getItem('userName');
+                const savedAvatar = localStorage.getItem('userAvatarUrl');
+                if (savedName) {
+                    currentNameElem.textContent = savedName;
+                    welcomeNameElem.textContent = savedName;
+                }
+                if (savedAvatar) { currentAvatarElem.src = savedAvatar; }
+            }
+
+            openModalBtn.onclick = function() {
+                nameInput.value = currentNameElem.textContent;
+                avatarUrlInput.value = currentAvatarElem.src;
+                modal.style.display = 'block';
+            }
+            const closeModal = () => modal.style.display = 'none';
+            closeModalBtn.onclick = closeModal;
+            cancelBtn.onclick = closeModal;
+            window.onclick = function(event) { if (event.target == modal) { closeModal(); } }
+            saveBtn.onclick = function() {
+                const newName = nameInput.value;
+                const newAvatar = avatarUrlInput.value;
+                currentNameElem.textContent = newName;
+                welcomeNameElem.textContent = newName;
+                if (newAvatar) { currentAvatarElem.src = newAvatar; }
+                
+                localStorage.setItem('userName', newName);
+                localStorage.setItem('userAvatarUrl', newAvatar);
+
+                closeModal();
+            }
+
+            const downloadButtons = document.querySelectorAll('.download-pdf-btn');
+            downloadButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const filename = this.dataset.filename || 'dashboard-report.pdf';
+                    const element = document.getElementById(targetId);
+
+                    if (element) {
+                        // Temporarily remove the download button from the clone to exclude it from PDF
+                        const buttonInCard = element.querySelector('.download-pdf-btn');
+                        if (buttonInCard) buttonInCard.style.display = 'none';
+
+                        const opt = {
+                            margin:       0.5,
+                            filename:     filename,
+                            image:        { type: 'jpeg', quality: 0.98 },
+                            html2canvas:  { scale: 2, useCORS: true },
+                            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+                        };
+
+                        html2pdf().from(element).set(opt).save().then(() => {
+                            // Restore the button's visibility after PDF is generated
+                            if (buttonInCard) buttonInCard.style.display = 'inline-flex';
+                        });
+                    }
+                });
+            });
+
+            loadUserProfile();
+            renderChart();
+            renderPlotlyMap();
+        });
+    </script>
+
+
+
+
+
+<script>
+  window.chatpilotConfig = {
+    chatbotId: "bc486095c0d74bf0b7846a1b891e02d1",
+    domain: "https://asistente.chatterbot.support",
+    chatModeOnly: true
+  }
+</script>
+<script
+  src="https://asistente.chatterbot.support/embed.min.js"
+  charset="utf-8"
+  defer
+></script>
+
+
+
+
+</body>
+</html>
