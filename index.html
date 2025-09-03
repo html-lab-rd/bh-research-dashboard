@@ -566,15 +566,27 @@ box-shadow: var(--shadow);
             }
 
             /* General Layout Adjustments */
-            .header {
-                flex-direction: row;
-                align-items: center;
-                gap: 1rem;
-                padding-top: 50px;
-            }
-            .header h1 {
-                flex-grow: 1;
-            }
+
+  .header {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding-top: 50px;
+  }
+  
+  .header h1 {
+    margin-bottom: 0 !important;
+    flex-grow: 0 !important;
+    font-size: 1.5rem; /* Optional: slightly smaller for mobile */
+  }
+  
+  .date-time {
+    margin-left: auto;
+    margin-top: 0 !important;
+    font-size: 0.8rem; /* Optional: slightly smaller for mobile */
+    padding: 0.4rem 0.8rem; /* Optional: adjust padding */
+  }
+  
             .cards-container, .profile-grid, .two-column-layout, .assets-grid, .colors-grid, .company-details {
                 grid-template-columns: 1fr;
             }
