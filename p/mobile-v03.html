@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biohorizons Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
+    <link rel="icon" href="https://bucket.mlcdn.com/a/3336/3336910/images/05a9012a6cb3d0815c47d6483ff1f12cb31325f8.png">
+    
+    <style>
+        :root {
+            --primary-color: #f58025;
+            --secondary-color: #ef5125;
+            --complement-1: #262223;
+            --complement-2: #FFE8A1;
+            
+            --text: #262223;
+            --text-light: #6b7280;
+            --bg: #f7fafc;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --border-color: #e5e7eb;
+        }
+
+        .dark-mode {
+            --text: #f7fafc;
+            --text-light: #a0aec0;
+            --bg: #1a202c;
+            --card-bg: #2d3748;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.2);
+            --border-color: #4a5568;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        body.menu-open {
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            transition: background-color 0.3s, border-color 0.3s, transform 0.3s ease-in-out;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            min-height: 73px;
+position: relative;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+        }
+
+        .dark-mode .logo {
+            filter: invert(1) hue-rotate(180deg) brightness(1.2) contrast(0.8);
+        }
+
+        .nav-menu {
+            flex-grow: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            margin: 0.3rem 1rem;
+            color: var(--text-light);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.2s, color 0.2s;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+        .nav-item:hover i {
+            color: #fff !important;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            color: #fff;
+            box-shadow: 0 4px 10px -2px rgba(245, 128, 37, 0.5);
+        }
+
+        .nav-item.active i {
+            color: #fff !important;
+        }
+        
+        .nav-item i {
+            margin-right: 2.2rem !important;
+            width: 22px !important;
+            height: 22px !important;
+            color: var(--text-light);
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .user-profile:hover {
+            background-color: var(--border-color);
+        }
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            object-fit: cover;
+        }
+        .user-info h4 {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            color: var(--text);
+        }
+        .user-info p {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            white-space: nowrap;
+        }
+
+        .theme-toggle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .theme-switch-wrapper { display: flex; align-items: center; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 44px; }
+        .theme-switch input { display:none; }
+        .slider {
+            background-color: #ccc; position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0; transition: .4s; border-radius: 24px;
+        }
+        .slider:before {
+            background-color: #fff; position: absolute; content: "";
+            height: 16px; width: 16px; left: 4px; bottom: 4px;
+            transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .theme-toggle i { margin: 0 0.5rem; color: var(--text-light); width: 20px; }
+
+        /* Main Content & Centering Wrapper */
+        .main-content {
+            padding-left: 260px; /* Space for fixed sidebar */
+            width: 100%;
+            transition: padding-left 0.3s ease-in-out;
+        }
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .content-section iframe {
+            width: 100%;
+            height: calc(100vh - 4rem);
+            border: none;
+            border-radius: 12px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .welcome-message {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+        }
+
+        .date-time {
+            background-color: var(--card-bg); padding: 0.5rem 1rem;
+            border-radius: 8px; box-shadow: var(--shadow);
+            font-weight: 500; color: var(--text-light); white-space: nowrap;
+        }
+        
+        /* Banners */
+        .dashboard-banner, .section-banner {
+            height: 230px;
+            background-image: url('https://bucket.mlcdn.com/a/3336/3336910/images/00eaeb3a7f94b417c1df5b0b97aa164a34a2ed97.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+        }
+        .section-banner {
+            margin-bottom: 2rem;
+        }
+        
+        /* ALL OTHER STYLES (Unchanged from original) */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 3rem; width: 100%; }
+        .stat-card { background-color: var(--card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow); display: flex; align-items: center; }
+        .stat-card .icon { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-right: 1rem; flex-shrink: 0; }
+        .stat-card .icon.primary { background-color: rgba(245, 128, 37, 0.1); color: var(--primary-color); }
+        .stat-card .icon.secondary { background-color: rgba(239, 81, 37, 0.1); color: var(--secondary-color); }
+        .stat-card .icon.complement-1 { background-color: rgba(38, 34, 35, 0.1); color: var(--complement-1); }
+        .stat-card .icon.complement-2 { background-color: rgba(255, 232, 161, 0.2); color: #c8a12d; }
+        .stat-card .info h3 { font-size: 2.2rem; font-weight: 700; }
+        .stat-card .info p { color: var(--text-light); font-size: 0.9rem; }
+        .stat-card .icon i { width: 24px; height: 24px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+
+
+
+
+        .chart-container { 
+background-color: var(--card-bg); 
+padding: 1.5rem; 
+padding-bottom: 60px !important; 
+border-radius: 12px; 
+box-shadow: var(--shadow); 
+max-height: 480px; 
+width: 100%;
+max-width: 1200px;
+}
+
+
+
+
+        /* FIXED: Chart canvas to prevent overflow */
+        .chart-container canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+
+
+
+        .leaderboard-container { 
+background-color: var(--card-bg); 
+padding: 1.5rem; 
+border-radius: 12px; 
+box-shadow: var(--shadow); 
+}
+
+
+
+        .container-header, .card-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+
+
+        .container-header h2, .card-header h2 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0; flex-grow: 1; }
+
+
+        .leaderboard-list .leader-item { display: flex; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
+        .leaderboard-list .leader-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .leader-item img { width: 40px; height: 40px; border-radius: 8px; margin-right: 1rem; object-fit: contain; }
+        .leader-item .leader-info { flex-grow: 1; }
+        .leader-item .leader-info h4 { font-weight: 600; }
+        .leader-item .leader-info p { color: var(--text-light); font-size: 0.85rem; }
+
+
+        .leader-item .leader-score { font-size: 1.1rem; font-weight: 700; color: var(--primary-color); }
+
+
+        .content-card { background-color: var(--card-bg); padding: 2rem; border-radius: 12px; box-shadow: var(--shadow); }
+
+
+        .content-card h3 { margin-bottom: 1rem; font-weight: 600; }
+
+
+        .content-card p, .content-card li { line-height: 1.7; color: var(--text-light); margin-bottom: 1rem; }
+
+
+        .content-card ul, .content-card ol { padding-left: 1.5rem; }
+
+
+        .download-pdf-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); background-color: transparent; color: var(--text-light); cursor: pointer; font-weight: 500; transition: background-color 0.2s, color 0.2s, border-color 0.2s; white-space: nowrap; flex-shrink: 0; }
+
+
+        .download-pdf-btn:hover { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+
+
+        .download-pdf-btn i { width: 18px; height: 18px; }
+
+        .competitor-table { width: 100%; border-collapse: collapse; margin-top: 2rem; overflow: hidden; border-radius: 8px; background-color: var(--card-bg);}
+
+
+        .competitor-table th, .competitor-table td { padding: 0.8rem 1rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+
+
+        .competitor-table th { font-weight: 600; font-size: 0.9rem; background-color: var(--primary-color); color: #ffffff; border-bottom: 1px solid var(--primary-color); }
+
+
+        .competitor-table tr:last-child td { border-bottom: none; }
+        
+
+.competitor-table tbody tr:nth-child(even) { background-color: var(--bg); }
+
+
+        .dark-mode .competitor-table tbody tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.03); }
+
+
+        #plotly-map-container { min-height: 550px; margin-top: 2rem; }
+
+
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); }
+
+
+        .modal-content { background-color: var(--card-bg); margin: 15% auto; padding: 2rem; border: 1px solid var(--border-color); width: 80%; max-width: 500px; border-radius: 12px; box-shadow: var(--shadow); position: relative; }
+        .close-button { color: var(--text-light); position: absolute; top: 1rem; right: 1.5rem; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-button:hover, .close-button:focus { color: var(--text); }
+        .modal-content h2 { margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-light); }
+        .form-group input, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg); color: var(--text); font-size: 1rem; }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+        .modal-buttons button { padding: 0.75rem 1.5rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-save { background-color: var(--primary-color); color: white; }
+        .btn-cancel { background-color: var(--border-color); color: var(--text); }
+        .bebell-footer { text-align: center; margin-top: 3rem; font-size: 0.9rem; color: var(--text-light); }
+        .heart { color: #e25555; display: inline-block; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+        .bebell-link { color: var(--primary-color); text-decoration: none; font-weight: 500; }
+        .full-width-img { width: 100%; height: auto; margin: 1.5rem 0; border-radius: 8px; }
+        .competitor-profile { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .competitor-profile:last-child { border-bottom: none; }
+        .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
+        .contact-info { background-color: rgba(0, 0, 0, 0.03); padding: 1rem; border-radius: 8px; margin: 1rem 0; line-height: 1.1; }
+        .dark-mode .contact-info { background-color: rgba(255, 255, 255, 0.03); }
+        .two-column-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin: 2rem 0; }
+        .company-image { width: 100%; height: auto; border-radius: 8px; margin-right: 1rem; background-color: #f8f9fa; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+        .dark-mode .company-image { background-color: rgba(255, 255, 255, 0.05); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); }
+        .column-left, .column-right { display: flex; flex-direction: column; }
+        .action-btn { padding: 0.5rem; border-radius: 4px; border: none; margin: 0 0.2rem; margin-bottom: 5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+        .email-btn { background-color: #4285f4; color: white; }
+        .whatsapp-btn { background-color: #25D366; color: white; }
+        .add-contact-btn { background-color: var(--primary-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; margin-left: 1rem; }
+        .add-contact-btn i { margin-right: 0.5rem; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .submit-btn { background-color: var(--primary-color); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; margin-top: 1rem; }
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--text-color); }
+        .subtitle { font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 2.5rem; }
+        .cards-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .card { background-color: var(--card-bg); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; }
+        .dark-mode .card { background-color: #1a202c; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
+        .card-icon { display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; background-color: var(--primary-color); border-radius: 12px; margin-bottom: 1rem; color: white !IMPORTANT; }
+        .card-icon i { color: white !IMPORTANT; font-size: 1.8rem; }
+        .card h3 { font-size: 1.3rem; margin-bottom: 0.8rem; color: var(--text-color); }
+        .card p { color: var(--text-secondary); margin-bottom: 1.2rem; line-height: 1.5; }
+        .card-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .tag { background-color: var(--primary-color); color: white; padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+        .content-iframe { width: 100%; height: 600px; border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+        .brand-overview p { margin-bottom: 1rem; line-height: 1.6; }
+        .company-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1.5rem; padding: 1.5rem; background-color: rgba(0, 0, 0, 0.03); border-radius: 8px; }
+        .dark-mode .company-details { background-color: rgba(255, 255, 255, 0.03); }
+        .detail-item { padding: 0.5rem 0; }
+        .assets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 1.5rem; }
+        .asset-item { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+        .asset-item h4 { padding: 1rem; margin: 0; background-color: var(--bg); border-bottom: 1px solid var(--border-color); }
+        .asset-preview { padding: 1.5rem; display: flex; align-items: center; justify-content: center; min-height: 200px; background-color: white; }
+        .dark-mode .asset-preview { background-color: #2a2a2a; }
+        .asset-preview img { max-width: 100%; max-height: 150px; object-fit: contain; }
+        .asset-actions { padding: 1rem; border-top: 1px solid var(--border-color); text-align: center; }
+        .download-asset-btn { display: inline-flex; align-items: center; text-align: center; justify-content: center; padding: 0.5rem 1rem; background-color: var(--primary-color); color: white; border-radius: 4px; text-decoration: none; font-weight: 500; width: 100%; }
+        .download-asset-btn i { margin-right: 0.5rem; }
+        .colors-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .color-item { display: flex; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+        .color-swatch { width: 80px; min-height: 120px; }
+        .color-details { flex: 1; padding: 1rem; }
+        .color-name { font-weight: 600; margin-bottom: 0.5rem; }
+        .color-values { display: flex; flex-direction: column; gap: 0.3rem; }
+        .color-value { font-family: monospace; font-size: 0.9rem; cursor: pointer; padding: 0.2rem 0.4rem; border-radius: 4px; transition: background-color 0.2s; }
+        .color-value:hover { background-color: rgba(0, 0, 0, 0.05); }
+        .dark-mode .color-value:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .contact-details { margin-top: 1rem; padding: 1.5rem; background-color: var(--card-bg); border-radius: 8px; }
+        .contact-item { margin-bottom: 0.8rem; display: flex; align-items: center; }
+        .contact-item:last-child { margin-bottom: 0; }
+        .contact-item strong { min-width: 80px; margin-right: 0.5rem; }
+        .copyable { cursor: pointer; padding: 0.2rem 0.4rem; border-radius: 4px; transition: background-color 0.2s; font-family: monospace; }
+        .copyable:hover { background-color: rgba(0, 0, 0, 0.05); }
+        .dark-mode .copyable:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .location-container { margin-top: 2rem; padding: 1.5rem; background: var(--card-bg); color: var(--text); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .location-container h3 { margin-bottom: 1rem; }
+        .map-embed iframe { width: 100%; height: 300px; border: none; border-radius: 10px; }
+        .location-actions { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 10px; }
+        .copy-map-link-btn, .app-btn { display: inline-flex; align-items: center; gap: 6px; background: #f58025; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 0.95rem; transition: background 0.2s ease; margin-bottom: 30px; }
+        .copy-map-link-btn:hover, .app-btn:hover { background: #d96f1f; }
+        .app-btn.android { background: #3DDC84; }
+        .app-btn.android:hover { background: #34be71; }
+        .app-btn.ios { background: #007AFF; }
+        .app-btn.ios:hover { background: #0062cc; }
+        .btn { display: inline-flex; align-items: center; gap: 10px; background: #f58025; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 0.95rem; transition: background 0.2s ease; margin-bottom: 20px; }
+        .btn:hover { background: #ef5625; }
+        #download-report { position: relative; }
+        #main-header { position: relative; height: 250px; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; }
+        .floating-gif { position: absolute; top: 30px; right: 30px; z-index: 100; animation: float 3s ease-in-out infinite; }
+        .floating-gif img { width: 120px; height: auto; border-radius: 8px; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        #hero-card { display: flex; gap: 3rem; align-items: center; padding: 2rem; }
+        #hero-content { flex: 1; }
+        #hero-image { flex: 1; display: flex; justify-content: center; }
+        #hero-image img { max-width: 100%; height: auto; border-radius: 12px; }
+        .hero-title { font-size: 2.2rem; margin-bottom: 1rem; color: var(--text-color); }
+        .hero-subtitle { font-size: 1.4rem; color: var(--primary-color); margin-bottom: 1.5rem; font-weight: 600; }
+        .hero-text { font-size: 1.1rem; line-height: 1.6; margin-bottom: 2rem; color: var(--text-secondary); }
+        .cta-button { display: inline-flex; align-items: center; justify-content: center; padding: 1rem 2rem; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 8px; margin-bottom: 20px; font-weight: 600; font-size: 1.1rem; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(245, 128, 37, 0.3); }
+        .cta-button:hover { background-color: #e0721a; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(245, 128, 37, 0.4); }
+        .cta-button i { margin-right: 0.8rem; }
+        
+        /* Mobile Menu Controls */
+        .mobile-menu-toggle, .close-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text);
+            padding: 0.5rem;
+            z-index: 101;
+            line-height: 0;
+        }
+        .mobile-menu-toggle i, .close-menu-btn i {
+            width: 28px;
+            height: 28px;
+        }
+        
+        /* Overlay for mobile menu */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* ----- RESPONSIVE STYLES ----- */
+        
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (max-width: 1024px) {
+            .cards-container { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 968px) {
+            #hero-card { flex-direction: column-reverse; text-align: center; gap: 2rem; }
+            #hero-image img { max-width: 100%; }
+            .hero-title { font-size: 1.8rem; }
+            .hero-subtitle { font-size: 1.2rem; }
+            .floating-gif { position: relative; top: auto; right: auto; margin-bottom: 1rem; }
+        }
+
+        @media (max-width: 768px) {
+            /* Mobile Sidebar */
+            .sidebar {
+                width: 300px;
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .sidebar-header {
+                justify-content: space-between;
+                padding: 1.5rem;
+            }
+            .close-menu-btn {
+                display: block;
+                color: var(--text-light);
+            }
+            .close-menu-btn:hover { color: var(--text); }
+            
+            /* Mobile Main Content */
+            .main-content {
+                padding-left: 0;
+            }
+            .content-wrapper {
+                padding: 1rem;
+            }
+
+            /* Mobile Burger Menu Toggle */
+            .mobile-menu-toggle {
+                display: block;
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                background-color: var(--card-bg);
+                border-radius: 50%;
+                box-shadow: var(--shadow);
+            }
+
+            /* General Layout Adjustments */
+            .header {
+                flex-direction: row;
+                align-items: center;
+                gap: 1rem;
+                padding-top: 50px;
+            }
+            .header h1 {
+                flex-grow: 1;
+            }
+            .cards-container, .profile-grid, .two-column-layout, .assets-grid, .colors-grid, .company-details {
+                grid-template-columns: 1fr;
+            }
+            .color-item { flex-direction: column; }
+            .color-swatch { width: 100%; min-height: 80px; }
+            .contact-item { flex-direction: column; align-items: flex-start; }
+            .contact-item strong { margin-bottom: 0.3rem; }
+            .company-image { max-width: 300px; margin: 0 auto; }
+            .modal-content { width: 90%; margin: 25% auto; }
+            h1 { font-size: 2rem; }
+            .subtitle { font-size: 1.1rem; }
+            #main-header { height: 150px; }
+            .hero-title { font-size: 1.6rem; }
+            .cta-button { padding: 0.8rem 1.5rem; font-size: 1rem; }
+        }
+        
+        @media (max-width: 640px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .stat-card .info h3 { font-size: 1.5rem; }
+        }
+
+
+
+
+/* Responsive tables with horizontal scroll */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+/* Responsive banner with different images for different screens */
+.dashboard-banner, .section-banner {
+    height: 230px;
+    background-size: cover; 
+    background-position: center; 
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+/* Default banner image (desktop) */
+.dashboard-banner {
+    background-image: url('https://bucket.mlcdn.com/a/3336/3336910/images/00eaeb3a7f94b417c1df5b0b97aa164a34a2ed97.png');
+}
+
+.section-banner {
+    background-image: url('https://bucket.mlcdn.com/a/3336/3336910/images/00eaeb3a7f94b417c1df5b0b97aa164a34a2ed97.png');
+}
+
+/* Tablet banner image */
+@media (max-width: 1024px) {
+    .dashboard-banner {
+        background-image: url('https://bucket.mlcdn.com/a/3336/3336910/images/00eaeb3a7f94b417c1df5b0b97aa164a34a2ed97.png');
+        height: 200px;
+    }
+    
+    .section-banner {
+        background-image: url('https://bucket.mlcdn.com/a/3336/3336910/images/00eaeb3a7f94b417c1df5b0b97aa164a34a2ed97.png');
+        height: 200px;
+    }
+}
+
+/* Mobile banner image */
+@media (max-width: 900px) {
+    .dashboard-banner {
+        background-image: url('https://bucket.mlcdn.com/a/3336/3336910/images/96221103b379d286cb0a08aaea1a0705c3bbca07.png');
+        height: 180px;
+    }
+    
+    .section-banner {
+        background-image: url('https://bucket.mlcdn.com/a/3336/3336910/images/96221103b379d286cb0a08aaea1a0705c3bbca07.png');
+        height: 180px;
+    }
+}
+
+/* Small mobile banner image */
+@media (max-width: 480px) {
+    .dashboard-banner {
+        background-image: url('https://bucket.mlcdn.com/a/3336/3336910/images/96221103b379d286cb0a08aaea1a0705c3bbca07.png');
+        height: 150px;
+    }
+    
+    .section-banner {
+        background-image: url('https://bucket.mlcdn.com/a/3336/3336910/images/96221103b379d286cb0a08aaea1a0705c3bbca07.png');
+        height: 150px;
+    }
+}
+
+/* Ensure tables don't break layout */
+.competitor-table {
+    min-width: 600px; /* Minimum width before scrolling kicks in */
+}
+
+/* Style the scrollbar for better UX */
+.table-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: var(--bg);
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+
+
+
+
+    </style>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img src="https://cdn.shopify.com/s/files/1/0242/0175/6777/files/imgi_19_BioHorizons-logo.svg?v=1756766875" alt="Biohorizons Logo" class="logo">
+            <button class="close-menu-btn"><i data-lucide="x"></i></button>
+        </div>
+
+        <div class="nav-menu">
+
+            <a href="#dashboard" class="nav-item active"><i data-lucide="layout-dashboard" style="margin-right: 10px;"></i><span>Dashboard</span></a>
+
+            <a href="#rss-feed" class="nav-item"><i data-lucide="rss" style="margin-right: 10px;"></i><span>RSS Feed</span></a>
+
+
+            <a href="#market-research" class="nav-item"><i data-lucide="bar-chart-2" style="margin-right: 10px;"></i><span>Market Research</span></a>
+
+
+            <a href="#competitor-analysis" class="nav-item"><i data-lucide="shield" style="margin-right: 10px;"></i><span>Competitor Analysis</span></a>
+
+            
+<a href="#swot-analysis" class="nav-item"><i data-lucide="scale" style="margin-right: 10px;"></i><span>SWOT Analysis</span></a>
+
+
+            <a href="#sales-strategies" class="nav-item"><i data-lucide="lightbulb" style="margin-right: 10px;"></i><span>Sales Strategies</span></a>
+
+
+            <a href="#download-report" class="nav-item"><i data-lucide="download" style="margin-right: 10px;"></i><span>Download Report</span></a>
+
+
+            <a href="#competitor-contacts" class="nav-item"><i data-lucide="contact" style="margin-right: 10px;"></i><span> Competitor Contacts</span></a>
+
+
+            <a href="#research-tools" class="nav-item"><i data-lucide="flask-conical" style="margin-right: 10px;"></i><span>Research Tools</span></a>
+
+
+            <a href="#ai-assistant" class="nav-item"><i data-lucide="bot" style="margin-right: 10px;"></i><span>AI Sales Assistant</span></a>
+
+
+            <a href="#branding-guide" class="nav-item"><i data-lucide="palette" style="margin-right: 10px;"></i><span>Brand Assets</span></a>
+        </div>
+
+
+
+
+        <div class="sidebar-footer">
+            <div class="user-profile" id="user-profile-button">
+                <img src="https://bucket.mlcdn.com/a/3336/3336910/images/8d6b38eb00c4082545de20b0f8d5de3009ccf01a.png" alt="User Profile Picture" id="user-avatar">
+                <div class="user-info">
+                    <h4 id="user-name">Ron Dubois</h4>
+                    <p id="user-id">ID: 12345</p>
+                </div>
+            </div>
+            <div class="theme-toggle-container">
+                <div class="theme-toggle">
+                    <i><i data-lucide="sun"></i></i>
+                    <div class="theme-switch-wrapper">
+                        <label class="theme-switch" for="checkbox">
+                            <input type="checkbox" id="checkbox" />
+                            <div class="slider round"></div>
+                        </label>
+                    </div>
+                    <i><i data-lucide="moon"></i></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="overlay"></div>
+
+    <main class="main-content">
+        <button class="mobile-menu-toggle"><i data-lucide="menu"></i></button>
+
+        <div class="content-wrapper">
+
+
+
+        <section id="dashboard" class="content-section active">
+            <div class="header">
+                <h1>Dashboard</h1>
+                <div id="date-time" class="date-time"></div>
+            </div>
+            <div class="dashboard-banner"></div>
+            <h2 class="welcome-message">Welcome Back, <span id="welcome-username">Ron</span>!</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon primary"><i data-lucide="trending-up"></i></div>
+                    <div class="info"><h3>$2.12B</h3><p>Market Size 2025</p></div>
+                </div>
+                 <div class="stat-card">
+                    <div class="icon secondary"><i data-lucide="line-chart"></i></div>
+                    <div class="info"><h3>7.1%</h3><p>CAGR (5 Years)</p></div>
+                </div>
+                 <div class="stat-card">
+                    <div class="icon complement-2"><i data-lucide="pie-chart"></i></div>
+                    <div class="info"><h3>4.0%</h3><p>Biohorizons Share</p></div>
+                </div>
+                 <div class="stat-card">
+                    <div class="icon complement-1"><i data-lucide="users"></i></div>
+                    <div class="info"><h3>12</h3><p>Key Competitors</p></div>
+                </div>
+            </div>
+
+
+            <div class="dashboard-grid">
+                <div class="chart-container">
+                    <div class="container-header"><h2>Market Projections</h2></div>
+                    <canvas id="marketProjectionsChart"></canvas>
+                </div>
+
+                <div class="leaderboard-container">
+                    <div class="container-header"><h2>Industry Leaderboard</h2></div>
+                    <div class="leaderboard-list">
+                         <div class="leader-item"><img src="https://bucket.mlcdn.com/a/3336/3336910/images/4d1ac06d897219b7d0714095118207ef72a82d64.png" alt="Straumann logo"><div class="leader-info"><h4>Institut Straumann</h4><p>Market Share</p></div><div class="leader-score">~35%</div></div>
+                         <div class="leader-item"><img src="https://bucket.mlcdn.com/a/3336/3336910/images/916762ece536c454bc76fadb83c8a6f957e65f36.png" alt="Dentsply Sirona logo"><div class="leader-info"><h4>Dentsply Sirona</h4><p>Market Share</p></div><div class="leader-score">~25%</div></div>
+                         <div class="leader-item"><img src="https://bucket.mlcdn.com/a/3336/3336910/images/8d00b4c91ec330968e66970d840e427766c14ce4.png" alt="Zimmer Biomet logo"><div class="leader-info"><h4>Zimmer Biomet</h4><p>Market Share</p></div><div class="leader-score">~15%</div></div>
+                         <div class="leader-item"><img src="https://bucket.mlcdn.com/a/3336/3336910/images/113494d1ea3b5526bcff85b6649c4be1d9acfaa7.png" alt="Nobel Biocare logo"><div class="leader-info"><h4>Nobel Biocare</h4><p>Market Share</p></div><div class="leader-score">~10%</div></div>
+                         <div class="leader-item"><img src="https://bucket.mlcdn.com/a/3336/3336910/images/057ebdb21ecc1b4dbfcea5c91348f7972dcf6f35.png" alt="BioHorizons logo"><div class="leader-info"><h4>BioHorizons</h4><p>Market Share</p></div><div class="leader-score">~5%</div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+       
+
+
+
+
+        <section id="rss-feed" class="content-section">
+            <iframe src="https://html-lab-rd.github.io/bh-research-dashboard/p/feed"></iframe>
+
+        </section>
+
+
+
+
+        
+
+
+<section id="market-research" class="content-section">
+    <div class="section-banner"></div>
+    <div class="content-card" id="market-research-card">
+        <div class="card-header">
+            <h2>U.S. Dental Implant Market Overview (2025)</h2>
+            <button class="download-pdf-btn" data-target="market-research-card" data-filename="Market-Research-Report.pdf"><i data-lucide="download"></i><span>Download PDF</span></button>
+
+
+        </div>
+
+        <p>The United States dental implant market is valued at approximately $2.12 billion in 2025 and is projected to grow at a CAGR of around 7.1% over the next five years. This growth is driven by an aging population, rising disposable incomes, and increasing awareness of advanced dental solutions.</p>
+        
+       <h3>Executive Summary</h3>
+ <p>BioHorizons, a subsidiary of Henry Schein, currently holds 4.0% market share in the global dental implant market, positioning it as the 6th largest player in a highly competitive landscape. The company generates approximately $400 million in annual revenue and operates in over 90 countries worldwide. This comprehensive analysis reveals both significant opportunities and competitive threats that require strategic attention.</p>
+
+
+
+<h3>Market Overview & Position</h3>
+ <p>The global dental implant market is valued at $5.06 billion in 2025 and is projected to grow to $7.08 billion by 2030 at a CAGR of 6.9%. BioHorizons competes in a market dominated by premium players, with the top three competitors controlling 62% of total market share.
+
+</p>
+
+
+
+    <!-- Full-width image added here -->
+        <img src="https://bucket.mlcdn.com/a/3336/3336910/images/ae6fd0e345e585bc227d61774d0be61e5e711835.png" alt="U.S. Dental Implant Market Visualization" class="full-width-img">
+
+
+<p class="note" style="font-size: 12px; margin-top: 0px; margin-bottom: 30px;">Global Dental Implant Market Share by Company  2024-2025.
+</p>
+        
+        <h3>Competitor Snapshot</h3>
+<div class="table-container">
+        <table class="competitor-table">
+            <thead><tr><th>Competitor</th><th>Est. Market Share</th><th>Key Strength</th><th>Primary Segment</th></tr></thead>
+            <tbody>
+                <tr><td>Institut Straumann</td><td>~35%</td><td>Premium quality, strong brand</td><td>Premium</td></tr>
+                <tr><td>Dentsply Sirona</td><td>~25%</td><td>Comprehensive digital workflow</td><td>Full Portfolio</td></tr>
+                <tr><td>Zimmer Biomet (ZimVie)</td><td>~15%</td><td>Orthopedic device expertise</td><td>Premium/Orthopedic</td></tr>
+                <tr><td>Nobel Biocare (Danaher)</td><td>~10%</td><td>Innovation (e.g., All-on-4®)</td><td>Premium</td></tr>
+                <tr><td>BioHorizons</td><td>~5%</td><td>Strong distribution, value</td><td>Mid-range</td></tr>
+            </tbody>
+        </table>
+</div>
+        <div id="plotly-map-container"></div>
+
+
+<br>
+<h3>Market Growth Projections & Opportunities</h3>
+<p>The dental implant market shows robust growth potential driven by:</p>
+
+<h4>Key Growth Drivers</h4><br>
+<ul>
+    <li><strong>Aging Population:</strong> Increasing demand for tooth replacement solutions</li>
+    <li><strong>Aesthetic Dentistry Growth:</strong> Rising consumer awareness and disposable income</li>
+    <li><strong>Technological Advancements:</strong> Digital workflows and immediate loading protocols</li>
+    <li><strong>Emerging Markets Expansion:</strong> Growing healthcare infrastructure in developing countries</li>
+</ul>
+
+<h4>Market Segment Analysis</h4><br>
+<ul>
+    <li><strong>Premium Segment:</strong> 35-40% of market, led by Straumann and Nobel Biocare</li>
+    <li><strong>Value Segment:</strong> 42.7% of market, fastest growing</li>
+    <li><strong>Titanium Materials:</strong> Dominate with 92.3% market share</li>
+    <li><strong>Endosteal Implants:</strong> 69.6% of market by type</li>
+</ul>
+
+
+    </div>
+</section>
+
+
+
+    <section id="competitor-analysis" class="content-section">
+    <div class="section-banner"></div>
+    <div class="content-card" id="competitor-analysis-card">
+        <div class="card-header">
+            <h2>Major Market Players</h2>
+            <button class="download-pdf-btn" data-target="competitor-analysis-card" data-filename="Competitor-Analysis.pdf"><i data-lucide="download"></i><span>Download PDF</span></button>
+        </div>
+        
+        <h3>1. Institut Straumann AG (Market Leader - 35% Share)</h3>
+<div class="table-container">
+        <table class="competitor-table">
+            <thead>
+                <tr>
+                    <th>Company Profile</th>
+                    <th>Key Strengths</th>
+                    <th>Sales Strategy</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="vertical-align: top;">
+                        <ul>
+                            <li><strong>Headquarters:</strong> Basel, Switzerland</li>
+                            <li><strong>Annual Revenue:</strong> $2.503 billion (2024)</li>
+                            <li><strong>Founded:</strong> 1954</li>
+                            <li><strong>Global Presence:</strong> 100+ countries</li>
+                        </ul>
+                    </td>
+                    <td style="vertical-align: top;">
+                        <ul>
+                            <li>Market leader with dominant premium positioning</li>
+                            <li>Roxolid titanium-zirconium alloy technology</li>
+                            <li>Extensive education and training programs</li>
+                            <li>Strong digital platform (Straumann AXS)</li>
+                            <li>Double-digit growth in both premium and challenger segments</li>
+                        </ul>
+                    </td>
+                    <td style="vertical-align: top;">Premium positioning with education-driven approach, targeting key opinion leaders and premium practitioners through direct sales and authorized distributors.</td>
+                </tr>
+            </tbody>
+        </table>
+</div>
+
+        <h3>2. Nobel Biocare (Danaher) - 15% Share</h3>
+<div class="table-container">
+        <table class="competitor-table">
+            <thead>
+                <tr>
+                    <th>Company Profile</th>
+                    <th>Key Strengths</th>
+                    <th>Sales Strategy</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="vertical-align: top;">
+                        <ul>
+                            <li><strong>Parent Company:</strong> Danaher Corporation</li>
+                            <li><strong>Annual Revenue:</strong> $750 million</li>
+                            <li><strong>Acquisition:</strong> Purchased by Danaher for $2.2 billion in 2014</li>
+                            <li><strong>Global Presence:</strong> 80+ countries</li>
+                        </ul>
+                    </td>
+                    <td style="vertical-align: top;">
+                        <ul>
+                            <li>Pioneer of All-on-4 treatment protocol</li>
+                            <li>Strong digital workflow integration</li>
+                            <li>Premium brand legacy and recognition</li>
+                            <li>Advanced prosthetic and implant systems</li>
+                        </ul>
+                    </td>
+                    <td style="vertical-align: top;">Innovation leadership with focus on digital-forward practices and specialists, leveraging Danaher's extensive resources and business system.</td>
+                </tr>
+            </tbody>
+        </table>
+</div>
+
+
+        <h3>3. Dentsply Sirona - 12% Share</h3>
+<div class="table-container">
+        <table class="competitor-table">
+            <thead>
+                <tr>
+                    <th>Company Profile</th>
+                    <th>Key Strengths</th>
+                    <th>Sales Strategy</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="vertical-align: top;">
+                        <ul>
+                            <li><strong>Headquarters:</strong> Charlotte, NC, USA</li>
+                            <li><strong>Annual Revenue:</strong> $3.79 billion (2024)</li>
+                            <li><strong>Implant Division:</strong> ~14.5% of total revenue</li>
+                        </ul>
+                    </td>
+                    <td style="vertical-align: top;">
+                        <ul>
+                            <li>Comprehensive dental solution provider</li>
+                            <li>Extensive global distribution network (120+ countries)</li>
+                            <li>Complete digital workflow capabilities</li>
+                            <li>Strong presence in both equipment and consumables</li>
+                        </ul>
+                    </td>
+                    <td style="vertical-align: top;">Full-portfolio approach targeting general practitioners to specialists through global distribution network and direct sales.</td>
+                </tr>
+            </tbody>
+        </table>
+</div>
+
+
+        <h3>4. Zimmer Biomet (ZimVie) - 8% Share</h3>
+<div class="table-container">
+        <table class="competitor-table">
+            <thead>
+                <tr>
+                    <th>Company Profile</th>
+                    <th>Key Strengths</th>
+                    <th>Sales Strategy</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="vertical-align: top;">
+                        <ul>
+                            <li><strong>Revenue:</strong> $850 million (estimated dental segment)</li>
+                            <li><strong>Specialty:</strong> Orthopedic-dental crossover expertise</li>
+                        </ul>
+                    </td>
+                    <td style="vertical-align: top;">
+                        <ul>
+                            <li>Strong surgical instrumentation background</li>
+                            <li>Tapered Screw-Vent implant system success</li>
+                            <li>Medical device distribution synergies</li>
+                            <li>Focus on complex surgical cases</li>
+                        </ul>
+                    </td>
+                    <td style="vertical-align: top;">Leveraging orthopedic expertise and medical device distribution channels to target complex surgical cases and specialists.</td>
+                </tr>
+            </tbody>
+        </table>
+</div>
+
+
+        <h3>5. Osstem Implant - 6% Share</h3>
+<div class="table-container">
+        <table class="competitor-table">
+            <thead>
+                <tr>
+                    <th>Company Profile</th>
+                    <th>Key Strengths</th>
+                    <th>Sales Strategy</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="vertical-align: top;">
+                        <ul>
+                            <li><strong>Headquarters:</strong> Seoul, South Korea</li>
+                            <li><strong>Annual Revenue:</strong> $1.315 billion (2024)</li>
+                            <li><strong>Growth:</strong> 27.8% revenue increase in 2022</li>
+                        </ul>
+                    </td>
+                    <td style="vertical-align: top;">
+                        <ul>
+                            <li>Aggressive global expansion (32 overseas subsidiaries)</li>
+                            <li>Competitive value pricing strategy</li>
+                            <li>Strong Asia-Pacific presence with growing European/American market share</li>
+                            <li>Plans to reach $2 trillion KRW revenue by 2026</li>
+                        </ul>
+                    </td>
+                    <td style="vertical-align: top;">Aggressive global expansion through overseas subsidiaries with competitive value pricing strategy targeting cost-conscious practitioners.</td>
+                </tr>
+
+
+            </tbody>
+        </table>
+</div>
+
+  <!-- Full-width image added here -->
+        <img src="https://bucket.mlcdn.com/a/3336/3336910/images/16bc3856b460a5fe0480fd64bce0cc7df4e73251.png" alt="Revenue vs Market Share" class="full-width-img">
+
+<p class="note" style="font-size: 12px; margin-top: 0px;">Revenue vs Market Share Analysis - Dental Implant Companies
+
+</p>
+
+
+
+
+     <h3>Additional Key Competitors</h3>
+
+<h4>Neoss (3% Market Share)</h4><br>
+<ul>
+    <li><strong>Headquarters:</strong> Harrogate, UK</li>
+    <li><strong>Managing Director (USA):</strong> John Chopack</li>
+    <li><strong>Revenue:</strong> $24.8 million</li>
+    <li><strong>Strategy:</strong> "Intelligent Simplicity" with minimal platform concept</li>
+</ul>
+
+<h4>Bicon (2% Market Share)</h4><br>
+<ul>
+    <li><strong>Headquarters:</strong> Boston, MA, USA</li>
+    <li><strong>President:</strong> Richard Parker</li>
+    <li><strong>Revenue:</strong> $8.4 million</li>
+    <li><strong>Specialty:</strong> Short implants with bacterially-sealed locking taper connection</li>
+</ul>
+
+
+  <!-- Full-width image added here -->
+        <img src="https://bucket.mlcdn.com/a/3336/3336910/images/a521527990adc501cf8476ea1d7a72cbabacb65b.png" alt="Revenue vs Market Share" class="full-width-img">
+
+<p class="note" style="font-size: 12px; margin-top: 0px;">Dental Implant Market Growth Projections 2024-2030.
+
+</p>
+
+
+
+    </div>
+</section>
+
+
+
+
+<section id="swot-analysis" class="content-section">
+    <div class="section-banner"></div>
+    <div class="content-card" id="swot-analysis-card">
+        <div class="card-header">
+            <h2>BioHorizons Competitive Position</h2>
+            <button class="download-pdf-btn" data-target="swot-analysis-card" data-filename="SWOT-Analysis.pdf"><i data-lucide="download"></i><span>Download PDF</span></button>
+        </div>
+        
+        <!-- Two-column content block -->
+        <div class="two-column-layout">
+            <div class="column-left">
+                <img src="https://bucket.mlcdn.com/a/3336/3336910/images/05a9012a6cb3d0815c47d6483ff1f12cb31325f8.png" alt="BioHorizons Logo" class="company-image">
+            </div>
+            <div class="column-right">
+               
+                
+                <h4>Current Market Standing</h4><br>
+                <ul>
+                    <li><strong>Market Share:</strong> 4.0% (6th position)</li>
+                    <li><strong>Annual Revenue:</strong> $400 million</li>
+                    <li><strong>Parent Company:</strong> Henry Schein (acquired controlling stake)</li>
+                    <li><strong>Founded:</strong> 1994 by Carl E. Misch, Martha Bidez, and Todd Strong</li>
+                    <li><strong>CEO:</strong> Steve Boggan (since 1999)</li>
+                </ul>
+ </div>
+                
+                <h4>Key Differentiators</h4>
+                <ul>
+                    <li><strong>American Manufacturing:</strong> All implants manufactured in the U.S.</li>
+                    <li><strong>CONELOG Connection:</strong> Clinically proven user-friendly connection system</li>
+                    <li><strong>Henry Schein Distribution:</strong> Access to extensive global distribution network</li>
+                    <li><strong>TeethXpress Program:</strong> Full-arch education and training platform</li>
+                </ul>
+           
+        </div>
+        
+ 
+
+
+ <h3>Biohorizons: SWOT</h3>
+        <p>A comprehensive SWOT analysis is crucial for strategic planning.</p>
+
+
+
+
+
+        <div class="table-container">
+        <table class="competitor-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Factor</th>
+                    <th>Impact Level</th>
+                    <th>Strategic Response</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td rowspan="3" style="background-color: rgba(76, 175, 80, 0.1); font-weight: bold;">Strengths</td>
+                    <td>American manufacturing advantage</td>
+                    <td>High</td>
+                    <td>Leverage Made in USA messaging</td>
+                </tr>
+                <tr>
+                    <td>Henry Schein distribution network</td>
+                    <td>High</td>
+                    <td>Maximize distribution reach and efficiency</td>
+                </tr>
+                <tr>
+                    <td>CONELOG connection technology</td>
+                    <td>Medium</td>
+                    <td>Promote unique connection benefits</td>
+                </tr>
+                <tr>
+                    <td rowspan="3" style="background-color: rgba(244, 67, 54, 0.1); font-weight: bold;">Weaknesses</td>
+                    <td>Limited market share (4%)</td>
+                    <td>High</td>
+                    <td>Aggressive market share acquisition strategy</td>
+                </tr>
+                <tr>
+                    <td>Mid-market positioning vs premium leaders</td>
+                    <td>Medium</td>
+                    <td>Develop premium product lines</td>
+                </tr>
+                <tr>
+                    <td>Less global presence than top competitors</td>
+                    <td>Medium</td>
+                    <td>Expand international presence</td>
+                </tr>
+                <tr>
+                    <td rowspan="3" style="background-color: rgba(33, 150, 243, 0.1); font-weight: bold;">Opportunities</td>
+                    <td>Growing US implant market</td>
+                    <td>High</td>
+                    <td>Focus on US market penetration</td>
+                </tr>
+                <tr>
+                    <td>Digital dentistry adoption</td>
+                    <td>High</td>
+                    <td>Invest in digital solutions</td>
+                </tr>
+                <tr>
+                    <td>Value segment expansion</td>
+                    <td>Medium</td>
+                    <td>Develop value-oriented products</td>
+                </tr>
+                <tr>
+                    <td rowspan="3" style="background-color: rgba(255, 152, 0, 0.1); font-weight: bold;">Threats</td>
+                    <td>Premium competitors (Straumann, Nobel)</td>
+                    <td>High</td>
+                    <td>Differentiate through innovation</td>
+                </tr>
+                <tr>
+                    <td>Asian value competitors (Osstem)</td>
+                    <td>Medium</td>
+                    <td>Compete on quality and service</td>
+                </tr>
+                <tr>
+                    <td>Consolidation by larger players</td>
+                    <td>High</td>
+                    <td>Consider strategic partnerships</td>
+                </tr>
+            </tbody>
+        </table>
+</div>
+    </div>
+</section>
+
+
+
+
+
+<section id="sales-strategies" class="content-section">
+    <div class="section-banner"></div>
+    <div class="content-card" id="sales-strategies-card">
+        <div class="card-header">
+            <h2>Key Strategic Initiatives</h2>
+            <button class="download-pdf-btn" data-target="sales-strategies-card" data-filename="Sales-Strategies.pdf"><i data-lucide="download"></i><span>Download PDF</span></button>
+        </div>
+        
+        <h3>Strategic Recommendations for BioHorizons</h3>
+        
+        <h4>1. Immediate Actions (0-12 months)</h4><br>
+        <ul>
+            <li><strong>Leverage American Manufacturing:</strong> Develop "Made in USA" marketing campaign targeting patriotic healthcare providers</li>
+            <li><strong>Maximize Henry Schein Network:</strong> Implement comprehensive distributor training and incentive programs</li>
+            <li><strong>Digital Integration:</strong> Invest in digital workflow solutions to compete with Straumann and Nobel Biocare</li>
+        </ul>
+        
+        <h4>2. Medium-term Strategy (1-3 years)</h4><br>
+        <ul>
+            <li><strong>Premium Product Development:</strong> Launch premium implant line to compete directly with market leaders</li>
+            <li><strong>Geographic Expansion:</strong> Focus on high-growth Asian markets where Osstem is gaining share</li>
+            <li><strong>Value Segment Entry:</strong> Develop cost-effective product line for emerging markets</li>
+        </ul>
+        
+        <h4>3. Long-term Vision (3-5 years)</h4><br>
+        <ul>
+            <li><strong>Market Share Goal:</strong> Target 5-6% market share through organic growth and strategic acquisitions</li>
+            <li><strong>Innovation Leadership:</strong> Establish R&D partnerships with dental schools and research institutions</li>
+            <li><strong>Digital Ecosystem:</strong> Build comprehensive digital platform similar to Straumann AXS</li>
+        </ul>
+        
+        <h3>Competitive Threats & Mitigation</h3>
+        
+        <h4>Primary Threats</h4><br>
+        <ul>
+            <li><strong>Straumann's Market Dominance:</strong> 35% market share with strong innovation pipeline</li>
+            <li><strong>Osstem's Aggressive Expansion:</strong> Rapid global growth with competitive pricing</li>
+            <li><strong>Industry Consolidation:</strong> Risk of being acquired or marginalized by larger players</li>
+        </ul>
+        
+        <h4>Mitigation Strategies</h4><br>
+        <ul>
+            <li><strong>Differentiation:</strong> Focus on unique CONELOG connection benefits and American quality</li>
+            <li><strong>Strategic Partnerships:</strong> Consider alliances with technology companies or research institutions</li>
+            <li><strong>Niche Market Focus:</strong> Develop specialized solutions for specific clinical applications</li>
+        </ul>
+        
+        <h3>Key Performance Indicators for Competitive Monitoring</h3>
+        
+        <h4>Metrics to Track Quarterly</h4>
+        <ul>
+            <li>Market share progression vs. top 5 competitors</li>
+            <li>Revenue growth rate vs. market growth (currently 6.9% CAGR)</li>
+            <li>Geographic expansion progress</li>
+            <li>New product launch cadence</li>
+            <li>Digital solution adoption rates</li>
+        </ul>
+        
+        <h4>Competitive Intelligence Sources</h4><br>
+        <ul>
+            <li>Industry trade publications and conferences</li>
+            <li>SEC filings for public companies</li>
+            <li>Patent filings and R&D announcements</li>
+            <li>Distributor feedback and market reports</li>
+            <li>Customer win/loss analysis</li>
+        </ul>
+        
+        <h3>Conclusion</h3>
+        <p>BioHorizons operates in a dynamic, high-growth market but faces significant competitive pressure from well-resourced market leaders. The company's strengths in American manufacturing, Henry Schein distribution, and proven CONELOG technology provide a solid foundation for growth. However, success will require strategic investments in digital solutions, premium product development, and aggressive market expansion to compete effectively against Straumann, Nobel Biocare, and emerging Asian competitors like Osstem.</p>
+        
+        <p>The dental implant market's projected growth from $5.06 billion to $7.08 billion by 2030 presents significant opportunities, but BioHorizons must act decisively to capture its fair share of this expansion while defending against competitive threats and industry consolidation.</p>
+    </div>
+</section>
+
+
+
+
+
+
+
+<section id="download-report" class="content-section">
+
+    <header class="section-banner">
+        <!-- Same banner image as other pages -->
+        <div class="floating-gif">
+            <img src="https://bucket.mlcdn.com/a/3336/3336910/images/4107bfc05f7d655c36b546e205e09e668ef93149.gif" alt="Floating animation">
+        </div>
+    </header>
+
+    <div class="content-card">
+        <section id="hero-card">
+            <div id="hero-content">
+                <h2 class="hero-title">📊 Competitor Analysis & Strategic Intelligence Report</h2>
+
+
+                <h3 class="hero-subtitle">General Market Research</h3>
+                <p class="hero-text">Gain a deep understanding of BioHorizons' position in the market with this comprehensive report. Inside, you'll find detailed competitor benchmarking, market trends, and strategic insights to help guide informed decisions and uncover new opportunities for growth. Perfect for sales teams, strategists, and executives seeking a clear competitive edge.</p>
+                <a href="https://cdn.shopify.com/s/files/1/0242/0175/6777/files/BioHorizons_Competitor_Analysis_Strategic_Intell.pdf.pdf?v=1756841465" download="BioHorizons_Competitor_Analysis_Report.pdf" class="cta-button">
+                    <i data-lucide="download" style="margin-right: 10px;"></i>
+                    <span>Download Report</span>
+                </a>
+            </div>
+            <div id="hero-image">
+                <img src="https://bucket.mlcdn.com/a/3336/3336910/images/d0cadde55e65b8eabbedee5bfd5fcb649ef393c8.png" alt="Market Research & Competitor Analysis for BioHorizons 2025">
+            </div>
+        </section>
+    </div>
+</section>
+
+
+
+
+
+
+   <section id="competitor-contacts" class="content-section">
+    <div class="section-banner"></div>
+    <div class="content-card" id="competitor-contacts-card">
+        <div class="card-header">
+            <h2>Leadership Information (Publicly Available)</h2>
+            <button class="download-pdf-btn" data-target="competitor-contacts-card" data-filename="Competitor-Contacts.pdf"><i data-lucide="download"></i><span>Download PDF</span></button>
+            <button id="add-contact-btn" class="add-contact-btn"><i data-lucide="plus-circle" style="margin-right: 10px;"></i><span>Add Contact</span></button>
+        </div>
+        
+
+<div class="table-container">
+        <table class="competitor-table" id="contacts-table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>CEO/President</th>
+                    <th>Public Contact Information</th>
+                    <th>Quick Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Institut Straumann AG</td>
+                    <td>Guillaume Daniellot</td>
+                    <td>
+                        <div>Phone: +41 61 965 11 11</div>
+                        <div>Email: info@straumann.com</div>
+                        <div>Website: www.straumann.com</div>
+                        <div>Address: Peter Merian-Weg 12, 4052 Basel, Switzerland</div>
+                    </td>
+                    <td>
+                        <button class="action-btn email-btn" data-email="info@straumann.com"><i data-lucide="mail"></i></button>
+                        <button class="action-btn whatsapp-btn" data-phone="+41619651111"><i data-lucide="message-circle"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Nobel Biocare (Danaher)</td>
+                    <td>Vafa Jamali (ZimVie CEO)</td>
+                    <td>
+                        <div>Phone: +1 202 828 0850</div>
+                        <div>Email: info@danaher.com</div>
+                        <div>Website: www.nobelbiocare.com</div>
+                        <div>Address: 2200 Pennsylvania Avenue NW, Washington, DC 20037, USA</div>
+                    </td>
+                    <td>
+                        <button class="action-btn email-btn" data-email="info@danaher.com"><i data-lucide="mail"></i></button>
+                        <button class="action-btn whatsapp-btn" data-phone="+12028280850"><i data-lucide="message-circle"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Dentsply Sirona</td>
+                    <td>Simon Campion</td>
+                    <td>
+                        <div>Phone: +1 844 848 0137</div>
+                        <div>Email: info@dentsplysirona.com</div>
+                        <div>Website: www.dentsplysirona.com</div>
+                        <div>Address: 13320 Ballantyne Corporate Pl, Charlotte, NC 28277, USA</div>
+                    </td>
+                    <td>
+                        <button class="action-btn email-btn" data-email="info@dentsplysirona.com"><i data-lucide="mail"></i></button>
+                        <button class="action-btn whatsapp-btn" data-phone="+18448480137"><i data-lucide="message-circle"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Zimmer Biomet (ZimVie)</td>
+                    <td>Vafa Jamali</td>
+                    <td>
+                        <div>Phone: +1 973 360 2400</div>
+                        <div>Email: info@zimvie.com</div>
+                        <div>Website: www.zimvie.com</div>
+                        <div>Address: One ZimVie Way, Parsippany, NJ 07054, USA</div>
+                    </td>
+                    <td>
+                        <button class="action-btn email-btn" data-email="info@zimvie.com"><i data-lucide="mail"></i></button>
+                        <button class="action-btn whatsapp-btn" data-phone="+19733602400"><i data-lucide="message-circle"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Osstem Implant</td>
+                    <td>Chae-Lin Lim</td>
+                    <td>
+                        <div>Phone: +82 2 2016 7000</div>
+                        <div>Email: info@osstem.com</div>
+                        <div>Website: www.osstem.com</div>
+                        <div>Address: 3, Magokjungang 12-ro, Gangseo-gu, Seoul 07789, South Korea</div>
+                    </td>
+                    <td>
+                        <button class="action-btn email-btn" data-email="info@osstem.com"><i data-lucide="mail"></i></button>
+                        <button class="action-btn whatsapp-btn" data-phone="+82220167000"><i data-lucide="message-circle"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>BioHorizons (Henry Schein)</td>
+                    <td>Steve Boggan</td>
+                    <td>
+                        <div>Phone: +1 888 246 8338</div>
+                        <div>Email: info@biohorizons.com</div>
+                        <div>Website: www.biohorizons.com</div>
+                        <div>Address: 2300 Riverchase Center, Birmingham, AL 35244, USA</div>
+                    </td>
+                    <td>
+                        <button class="action-btn email-btn" data-email="info@biohorizons.com"><i data-lucide="mail"></i></button>
+                        <button class="action-btn whatsapp-btn" data-phone="+18882468338"><i data-lucide="message-circle"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Neoss</td>
+                    <td>John Chopack (Managing Director USA)</td>
+                    <td>
+                        <div>Phone: +44 1423 817733</div>
+                        <div>Email: info@neoss.com</div>
+                        <div>Website: www.neoss.com</div>
+                        <div>Address: Windsor House, Cornwall Rd, Harrogate HG1 2PW, UK</div>
+                    </td>
+                    <td>
+                        <button class="action-btn email-btn" data-email="info@neoss.com"><i data-lucide="mail"></i></button>
+                        <button class="action-btn whatsapp-btn" data-phone="+441423817733"><i data-lucide="message-circle"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Bicon</td>
+                    <td>Richard Parker</td>
+                    <td>
+                        <div>Phone: +1 617 524 4443</div>
+                        <div>Email: info@bicon.com</div>
+                        <div>Website: www.bicon.com</div>
+                        <div>Address: 501 Arborway, Boston, MA 02130, USA</div>
+                    </td>
+                    <td>
+                        <button class="action-btn email-btn" data-email="info@bicon.com"><i data-lucide="mail"></i></button>
+                        <button class="action-btn whatsapp-btn" data-phone="+16175244443"><i data-lucide="message-circle"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+    
+    <!-- Add Contact Modal -->
+    <div id="add-contact-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Add New Contact</h3>
+            <form id="contact-form">
+                <div class="form-group">
+                    <label for="company">Company</label>
+                    <input type="text" id="company" required>
+                </div>
+                <div class="form-group">
+                    <label for="ceo">CEO/President</label>
+                    <input type="text" id="ceo" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    <input type="text" id="phone">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email">
+                </div>
+                <div class="form-group">
+                    <label for="website">Website</label>
+                    <input type="url" id="website">
+                </div>
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" rows="2"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Add Contact</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+
+      
+
+<section id="research-tools" class="content-section">
+    <div class="section-banner"></div>
+    <div class="content-card">
+        
+<!-- Title and Subtitle -->
+        <h1>Advanced Market Intelligence Platform</h1>
+        <p class="subtitle">Access comprehensive data, analytics, and insights to drive strategic decisions</p>
+
+<div>
+
+
+
+</div>
+        
+        <!-- Three Column Cards -->
+        <div class="cards-container">
+            <div class="card">
+                <div class="card-icon">
+                    <i data-lucide="bar-chart"></i>
+                </div>
+                <h3>Market Analytics</h3>
+                <p>Real-time market data and performance metrics with interactive visualization tools.</p>
+                <div class="card-tags">
+                    <span class="tag">Data</span>
+                    <span class="tag">Trends</span>
+                    <span class="tag">Metrics</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">
+                    <i data-lucide="users"></i>
+                </div>
+                <h3>Competitor Intelligence</h3>
+                <p>Detailed profiles of key market players with financials, strategies, and leadership contacts.</p>
+                <div class="card-tags">
+                    <span class="tag">Benchmarking</span>
+                    <span class="tag">Profiles</span>
+                    <span class="tag">Analysis</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">
+                    <i data-lucide="trending-up"></i>
+                </div>
+                <h3>Growth Projections</h3>
+                <p>Market forecasts, growth opportunities, and strategic recommendations for expansion.</p>
+                <div class="card-tags">
+                    <span class="tag">Forecasts</span>
+                    <span class="tag">Opportunities</span>
+                    <span class="tag">Strategy</span>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+<div class="app-button" style="margin-top: 20px;">
+   <a href="https://www.sec.gov/edgar/search/" target="_blank" class="app-btn">
+            <i data-lucide="external-link"></i> Research EDGAR Company Database 
+        </a>
+        <a href="https://search.sunbiz.org/" target="_blank" class="app-btn">
+            <i data-lucide="external-link"></i> Research Division of Corporations
+        </a>
+
+</div>
+      
+
+        
+        <!-- Your iframe content would go here -->
+        <iframe src="https://www.google.com/search?igu=1&q=dental+implant+market+research" class="content-iframe"></iframe>
+
+
+    </div>
+</section>
+
+
+
+
+
+      
+
+        <section id="ai-assistant" class="content-section">
+            <iframe src="https://asistente.chatterbot.support/share/bc486095c0d74bf0b7846a1b891e02d1"></iframe>
+
+        </section>
+
+
+
+      
+      
+<section id="branding-guide" class="content-section">
+    <div class="section-banner"></div>
+    <div class="content-card" id="branding-guidelines-card">
+        <div class="card-header">
+            <h2>BioHorizons Implant Brand Assets</h2>
+            <button class="download-pdf-btn" data-target="branding-guidelines-card" data-filename="BioHorizons-Branding-Guidelines.pdf"><i data-lucide="download"></i><span>Download PDF</span></button>
+        </div>
+
+
+        
+        <!-- Brand Overview -->
+        <div class="brand-overview">
+            <h3>Brand Overview</h3>
+            <p>BioHorizons is a leading brand that specializes in dental implants and other related products and services. With a strong focus on innovation and quality, BioHorizons offers a wide range of implant solutions to meet the needs of dental professionals and their patients. Their implant portfolio includes the Tapered Pro, Tapered Internal, Tapered Plus, Tapered Short, Tapered 3.0, Tapered Tissue Level, Tapered IM, Tapered PTG, and CONELOG PROGRESSIVE implants. These implants are known for their prosthetic techniques, validated milling center, and Authentic Connection abutments. In addition to implants, BioHorizons provides a range of biologic products, such as bone grafting materials, membranes, and soft tissue wound dressings.</p>
+            
+            <p>They also offer digital solutions, including guided surgery and CAD/CAM workflows, along with a variety of instruments and tools. BioHorizons is committed to advancing dental technology and education, and they regularly host events, webinars, and symposium series. They also have a comprehensive resource library and an app for instructions and information.</p>
+            
+            <p>With offices and distributors in various countries, including the United States, Canada, Chile, Italy, Mexico, Spain, and the United Kingdom, BioHorizons is a global leader in dental implant solutions.</p>
+            
+            <div class="company-details">
+                <div class="detail-item">
+                    <strong>Brand industry:</strong> Dental Implants & Solutions
+                </div>
+                <div class="detail-item">
+                    <strong>Company type:</strong> Privately Held
+                </div>
+                <div class="detail-item">
+                    <strong>Year founded:</strong> 1994
+                </div>
+                <div class="detail-item">
+                    <strong>Company size:</strong> 201-500 employees
+                </div>
+            </div>
+        </div>
+        
+        <!-- Logo Assets -->
+        <div class="logo-assets">
+            <h3 style="margin-top: 20px;">Logo Assets</h3>
+            <div class="assets-grid">
+                <div class="asset-item">
+                    <h4>Primary Logo (SVG)</h4>
+                    <div class="asset-preview">
+                        <img src="https://cdn.shopify.com/s/files/1/0242/0175/6777/files/imgi_19_BioHorizons-logo.svg?v=1756766875" alt="BioHorizons Primary Logo">
+                    </div>
+                    <div class="asset-actions">
+                        <a href="https://cdn.shopify.com/s/files/1/0242/0175/6777/files/imgi_19_BioHorizons-logo.svg?v=1756766875" download="BioHorizons-Primary-Logo.svg" class="download-asset-btn">
+                            <i data-lucide="download"></i> Download SVG
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="asset-item">
+                    <h4>Social Media Logo (PNG)</h4>
+                    <div class="asset-preview">
+                        <img src="https://bucket.mlcdn.com/a/3336/3336910/images/05a9012a6cb3d0815c47d6483ff1f12cb31325f8.png" alt="BioHorizons Social Logo">
+                    </div>
+                    <div class="asset-actions">
+                        <a href="https://bucket.mlcdn.com/a/3336/3336910/images/05a9012a6cb3d0815c47d6483ff1f12cb31325f8.png" download="BioHorizons-Social-Logo.png" class="download-asset-btn">
+                            <i data-lucide="download"></i> Download PNG
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="asset-item">
+                    <h4>Public/Social Banner</h4>
+                    <div class="asset-preview">
+                        <img src="https://bucket.mlcdn.com/a/3336/3336910/images/00eaeb3a7f94b417c1df5b0b97aa164a34a2ed97.png" alt="BioHorizons Banner">
+                    </div>
+                    <div class="asset-actions">
+                        <a href="https://bucket.mlcdn.com/a/3336/3336910/images/00eaeb3a7f94b417c1df5b0b97aa164a34a2ed97.png" download="BioHorizons-Banner.png" class="download-asset-btn">
+                            <i data-lucide="download"></i> Download PNG
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="asset-item">
+                    <h4>American Made Stamp</h4>
+                    <div class="asset-preview">
+                        <img src="https://bucket.mlcdn.com/a/3336/3336910/images/62151bf686c907abe8c0fb95d17702fca9a7c169.png" alt="American Made Stamp">
+                    </div>
+                    <div class="asset-actions">
+                        <a href="https://bucket.mlcdn.com/a/3336/3336910/images/62151bf686c907abe8c0fb95d17702fca9a7c169.png" download="American-Made-Stamp.png" class="download-asset-btn">
+                            <i data-lucide="download"></i> Download PNG
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Color Palette -->
+        <div class="color-palette">
+            <h3 style="margin-top: 20px;">Color Palette</h3>
+            <div class="colors-grid">
+                <div class="color-item">
+                    <div class="color-swatch" style="background-color: #f58025;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Primary Orange</div>
+                        <div class="color-values">
+                            <span class="color-value" data-value="#f58025">HEX: #f58025</span>
+                            <span class="color-value" data-value="rgb(245, 128, 37)">RGB: 245, 128, 37</span>
+                            <span class="color-value" data-value="hsl(27, 91%, 55%)">HSL: 27, 91%, 55%</span>
+                            <span class="color-value" data-value="cmyk(0%, 48%, 85%, 4%)">CMYK: 0%, 48%, 85%, 4%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="color-item">
+                    <div class="color-swatch" style="background-color: #262223;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Dark Gray</div>
+                        <div class="color-values">
+                            <span class="color-value" data-value="#262223">HEX: #262223</span>
+                            <span class="color-value" data-value="rgb(38, 34, 35)">RGB: 38, 34, 35</span>
+                            <span class="color-value" data-value="hsl(345, 6%, 14%)">HSL: 345, 6%, 14%</span>
+                            <span class="color-value" data-value="cmyk(0%, 11%, 8%, 85%)">CMYK: 0%, 11%, 8%, 85%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="color-item">
+                    <div class="color-swatch" style="background-color: #ffe8a1;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Light Cream</div>
+                        <div class="color-values">
+                            <span class="color-value" data-value="#ffe8a1">HEX: #ffe8a1</span>
+                            <span class="color-value" data-value="rgb(255, 232, 161)">RGB: 255, 232, 161</span>
+                            <span class="color-value" data-value="hsl(44, 100%, 82%)">HSL: 44, 100%, 82%</span>
+                            <span class="color-value" data-value="cmyk(0%, 9%, 37%, 0%)">CMYK: 0%, 9%, 37%, 0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+        
+        
+        <!-- Contact Information -->
+        <div class="contact-info">
+            <h3>Contact Information</h3>
+            <div class="contact-details">
+                <div class="contact-item">
+                    <strong>Phone:</strong> 
+                    <span class="copyable" data-value="+1 888 246 8338">+1 888 246 8338</span>
+                </div>
+                <div class="contact-item">
+                    <strong>Email:</strong> 
+                    <span class="copyable" data-value="info@biohorizons.com">info@biohorizons.com</span>
+                </div>
+                <div class="contact-item">
+                    <strong>Address:</strong> 
+                    <span class="copyable" data-value="2300 Riverchase Center, Birmingham, AL 35244, USA">2300 Riverchase Center, Birmingham, AL 35244, USA</span>
+                </div>
+
+                    <div class="contact-item">
+                    <strong>Website:</strong> 
+<span class="copyable" data-value="www.biohorizons.com">www.biohorizons.com</span>
+ </div>
+
+<div class="app-button" style="margin-top: 20px;">
+
+   <a href="https://play.google.com/store/apps/details?id=com.biohorizons.mobileapp&pli=1" target="_blank" class="app-btn android">
+            <i data-lucide="smartphone"></i> Download Android App
+        </a>
+        <a href="https://itunes.apple.com/us/app/biohorizons-mobile-app/id1178163527?mt=8" target="_blank" class="app-btn ios">
+            <i data-lucide="smartphone"></i> Download iOS App
+        </a>
+
+</div>
+
+                
+            </div>
+        </div>
+
+
+   <!-- Google Maps Location -->
+<div class="location-container">
+    <h3>BioHorizons Implant Systems Inc Headquarters</h3>
+    <div class="map-embed">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d54593890.55944511!2d-164.82788085937497!3d33.367237465838315!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8889225871148943%3A0x269ee8379d85115a!2sBioHorizons%20Implant%20Systems%20Inc.!5e0!3m2!1sen!2sdo!4v1756800833142!5m2!1sen!2sdo"
+            allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+    <div class="location-actions">
+        <button class="copy-map-link-btn" data-map-url="https://maps.app.goo.gl/Uk3MhVZMxau9HKuR9">
+            <i data-lucide="copy"></i> Copy Google Maps Link
+        </button>
+     
+    </div>
+</div>
+
+
+    </div>
+</section>
+        
+
+
+
+
+       <div class="bebell-footer">
+                <p>Developed with <span class="heart">💖</span> by <a href="https://bebelldigitals.com" class="bebell-link" target="_blank" rel="noopener">Bebell Digital Solutions</a>.</p>
+            </div>
+        
+
+
+
+
+</div>
+
+</main>
+
+    
+
+
+
+
+
+
+
+<div id="profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">×</span><h2>Edit Profile</h2>
+            <div class="form-group"><label for="edit-name">Name</label><input type="text" id="edit-name" placeholder="Enter your name"></div>
+            <div class="form-group"><label for="edit-avatar-url">Avatar Image URL</label><input type="text" id="edit-avatar-url" placeholder="https://example.com/image.png"></div>
+            <div class="modal-buttons"><button class="btn-cancel">Cancel</button><button class="btn-save">Save Changes</button></div>
+        </div>
+    </div>
+
+    
+
+
+
+
+
+
+<script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            
+
+
+// --- Mobile Menu & Swipe Functionality (NEW) ---
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.overlay');
+            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+            const closeMenuBtn = document.querySelector('.close-menu-btn');
+            const allNavLinksForMenu = document.querySelectorAll('.sidebar .nav-item');
+
+            const openSidebar = () => {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+                document.body.classList.add('menu-open');
+            };
+
+            const closeSidebar = () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.classList.remove('menu-open');
+            };
+
+            if (mobileMenuToggle && closeMenuBtn && overlay) {
+                mobileMenuToggle.addEventListener('click', openSidebar);
+                closeMenuBtn.addEventListener('click', closeSidebar);
+                overlay.addEventListener('click', closeSidebar);
+                
+                // Close sidebar when a nav link is clicked on mobile
+                allNavLinksForMenu.forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth <= 768) {
+                            closeSidebar();
+                        }
+                    });
+                });
+            }
+
+
+
+
+
+            // Swipe to open logic
+            let touchStartX = 0;
+            let touchEndX = 0;
+            const swipeThreshold = 50; // Minimum distance for a swipe
+
+            document.addEventListener('touchstart', (e) => {
+                
+
+
+// Only track if touch is near the left edge and menu is closed
+                if (e.touches[0].clientX < 30 && !sidebar.classList.contains('open')) {
+                    touchStartX = e.touches[0].clientX;
+                } else {
+                    touchStartX = 0;
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                if (touchStartX === 0) return;
+                touchEndX = e.changedTouches[0].clientX;
+                const swipeDistance = touchEndX - touchStartX;
+                if (swipeDistance > swipeThreshold) {
+                    openSidebar();
+                }
+            }, { passive: true });
+
+      
+      
+
+            
+
+             // --- Navigation and Page Switching ---
+            const allNavLinks = document.querySelectorAll('.nav-item');
+            allNavLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector('.nav-item.active')?.classList.remove('active');
+                    this.classList.add('active');
+                    const targetId = this.getAttribute('href').substring(1);
+                    document.querySelector('.content-section.active')?.classList.remove('active');
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) {
+                        targetSection.classList.add('active');
+                    }
+                    
+                    if (targetId === 'market-research') {
+                        // Use a short timeout to ensure the container is visible before resizing
+                        setTimeout(() => {
+                            if (typeof Plotly !== 'undefined') {
+                                Plotly.Plots.resize('plotly-map-container');
+                            }
+                        }, 10);
+                    }
+                });
+            });
+            
+            // --- Dark Mode Theme Toggle ---
+            const themeToggle = document.getElementById('checkbox');
+            const body = document.body;
+            themeToggle.addEventListener('change', function() {
+                body.classList.toggle('dark-mode'); 
+                updateChartColors(); 
+                renderPlotlyMap();
+            });
+
+            // --- Date and Time ---
+            const dateTimeElement = document.getElementById('date-time');
+            function updateDateTime() {
+                if (!dateTimeElement) return;
+                const now = new Date();
+                if (window.innerWidth <= 768) {
+                    const weekday = now.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+                    const datePart = now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
+                    dateTimeElement.textContent = `${weekday}. ${datePart}`;
+                } else {
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                    dateTimeElement.textContent = now.toLocaleDateString('en-US', options);
+                }
+            }
+            setInterval(updateDateTime, 1000);
+            updateDateTime();
+            window.addEventListener('resize', updateDateTime);
+
+            // --- Chart.js Market Projections Chart ---
+            let marketChart;
+            const chartData = {
+                labels: [2024, 2025, 2026, 2027, 2028, 2029, 2030],
+                datasets: [{
+                    label: 'Market Size (USD Billion)', data: [4.79, 5.06, 5.41, 5.78, 6.18, 6.61, 7.08],
+                    borderColor: '#f58025', backgroundColor: 'rgba(245, 128, 37, 0.1)', fill: true, tension: 0.4
+                }, {
+                    label: 'Biohorizons Revenue (USD Million)', data: [400, 420, 445, 472, 501, 532, 566],
+                    borderColor: '#ef5125', backgroundColor: 'rgba(239, 81, 37, 0.1)', fill: true, tension: 0.4
+                }]
+            };
+            function getChartOptions() {
+                const isDarkMode = body.classList.contains('dark-mode');
+                const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                const textColor = isDarkMode ? '#f7fafc' : '#262223';
+                return { responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } }, x: { grid: { color: gridColor }, ticks: { color: textColor } } },
+                    plugins: { legend: { labels: { color: textColor } } }
+                };
+            }
+            function renderChart() {
+                const ctx = document.getElementById('marketProjectionsChart');
+                if (ctx) {
+                    marketChart = new Chart(ctx.getContext('2d'), { type: 'line', data: chartData, options: getChartOptions() });
+                }
+            }
+            function updateChartColors() { if (marketChart) { marketChart.options = getChartOptions(); marketChart.update(); } }
+            
+            // --- Plotly.js US Map ---
+            function renderPlotlyMap() {
+                if (typeof Plotly === 'undefined' || !document.getElementById('plotly-map-container')) return;
+                const isDarkMode = body.classList.contains('dark-mode');
+                const mapData = [{
+                    type: 'choropleth', locationmode: 'USA-states',
+                    locations: ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'],
+                    z: [5, 1, 1, 5, 1, 2, 2, 2, 1, 5, 1, 4, 2, 3, 3, 3, 3, 5, 2, 2, 2, 3, 3, 5, 3, 4, 3, 1, 2, 2, 4, 2, 5, 3, 3, 4, 4, 2, 2, 5, 3, 5, 4, 4, 2, 2, 4, 3, 3, 4],
+                    text: ['BioHorizons', 'Straumann', 'Straumann', 'BioHorizons', 'Straumann', 'Dentsply Sirona', 'Dentsply Sirona', 'Dentsply Sirona', 'Straumann', 'BioHorizons', 'Straumann', 'Zimmer Biomet', 'Dentsply Sirona', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'BioHorizons', 'Dentsply Sirona', 'Dentsply Sirona', 'Dentsply Sirona', 'Zimmer Biomet', 'Zimmer Biomet', 'BioHorizons', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'Straumann', 'Dentsply Sirona', 'Dentsply Sirona', 'Zimmer Biomet', 'Dentsply Sirona', 'BioHorizons', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'Dentsply Sirona', 'Dentsply Sirona', 'BioHorizons', 'Zimmer Biomet', 'BioHorizons', 'Zimmer Biomet', 'Zimmer Biomet', 'Dentsply Sirona', 'Dentsply Sirona', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet', 'Zimmer Biomet'],
+                    colorscale: [[0, '#FADBD8'], [0.25, '#F5B7B1'], [0.5, '#F1948A'], [0.75, '#EC7063'], [1, '#E74C3C']],
+                    colorbar: { title: 'Competitor Index', ticks: '', orientation: 'h', y: -0.15, yanchor: 'top' },
+                    marker: { line: { color: isDarkMode ? '#1a202c' : 'rgb(255,255,255)', width: 2 } }
+                }];
+                const layout = { geo: { scope: 'usa', showlakes: true, lakecolor: isDarkMode ? '#1a202c' : 'rgb(255, 255, 255)' }, paper_bgcolor: 'transparent', font: { color: isDarkMode ? '#f7fafc' : '#262223' }, margin: { t: 0, b: 0, l: 0, r: 0 } };
+                Plotly.newPlot('plotly-map-container', mapData, layout, { responsive: true });
+            }
+            
+            // --- Edit Profile Modal ---
+            const modal = document.getElementById('profile-modal');
+            const openModalBtn = document.getElementById('user-profile-button');
+            const closeModalBtn = modal.querySelector('.close-button');
+            const cancelBtn = modal.querySelector('.btn-cancel');
+            const saveBtn = modal.querySelector('.btn-save');
+            const nameInput = document.getElementById('edit-name');
+            const avatarUrlInput = document.getElementById('edit-avatar-url');
+            const currentNameElem = document.getElementById('user-name');
+            const welcomeNameElem = document.getElementById('welcome-username');
+            const currentAvatarElem = document.getElementById('user-avatar');
+
+            function loadUserProfile() {
+                const savedName = localStorage.getItem('userName');
+                const savedAvatar = localStorage.getItem('userAvatarUrl');
+                if (savedName) {
+                    currentNameElem.textContent = savedName;
+                    welcomeNameElem.textContent = savedName.split(' ')[0];
+                }
+                if (savedAvatar) { currentAvatarElem.src = savedAvatar; }
+            }
+
+            openModalBtn.onclick = function() {
+                nameInput.value = currentNameElem.textContent;
+                avatarUrlInput.value = currentAvatarElem.src;
+                modal.style.display = 'block';
+            }
+            const closeModal = () => modal.style.display = 'none';
+            closeModalBtn.onclick = closeModal;
+            cancelBtn.onclick = closeModal;
+            window.onclick = function(event) { if (event.target == modal) { closeModal(); } }
+            saveBtn.onclick = function() {
+                const newName = nameInput.value;
+                const newAvatar = avatarUrlInput.value;
+                currentNameElem.textContent = newName;
+                welcomeNameElem.textContent = newName.split(' ')[0];
+                if (newAvatar) { currentAvatarElem.src = newAvatar; }
+                localStorage.setItem('userName', newName);
+                localStorage.setItem('userAvatarUrl', newAvatar);
+                closeModal();
+            }
+
+            // --- PDF Download Functionality ---
+            const downloadButtons = document.querySelectorAll('.download-pdf-btn');
+            downloadButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const filename = this.dataset.filename || 'dashboard-report.pdf';
+                    const element = document.getElementById(targetId);
+                    if (element) {
+                        const buttonsToHide = element.querySelectorAll('.download-pdf-btn, .add-contact-btn');
+                        buttonsToHide.forEach(btn => btn.style.display = 'none');
+                        const opt = { margin: 0.5, filename: filename, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+                        html2pdf().from(element).set(opt).save().then(() => {
+                            buttonsToHide.forEach(btn => btn.style.display = 'inline-flex');
+                        });
+                    }
+                });
+            });
+
+            // --- Initial Load Functions ---
+            loadUserProfile();
+            renderChart();
+            renderPlotlyMap();
+            lucide.createIcons();
+        });
+
+        // --- Additional Scripts for Contacts and Copying ---
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCustomContacts();
+            const modal = document.getElementById('add-contact-modal');
+            const addBtn = document.getElementById('add-contact-btn');
+            const closeBtn = modal.querySelector('.close');
+            const form = document.getElementById('contact-form');
+            if (addBtn) addBtn.addEventListener('click', () => modal.style.display = 'block');
+            if (closeBtn) closeBtn.addEventListener('click', () => modal.style.display = 'none');
+            window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+            if (form) form.addEventListener('submit', function(e) { e.preventDefault(); addNewContact(); modal.style.display = 'none'; form.reset(); });
+            document.body.addEventListener('click', function(e) {
+                if (e.target.closest('.email-btn')) {
+                    const email = e.target.closest('.email-btn').getAttribute('data-email');
+                    if (email) window.location.href = `mailto:${email}`;
+                }
+                if (e.target.closest('.whatsapp-btn')) {
+                    const phone = e.target.closest('.whatsapp-btn').getAttribute('data-phone');
+                    const message = prompt('Enter your message for WhatsApp:');
+                    if (message && phone) {
+                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+                    }
+                }
+            });
+        });
+        function addNewContact() {
+            const contact = { company: document.getElementById('company').value, ceo: document.getElementById('ceo').value, phone: document.getElementById('phone').value, email: document.getElementById('email').value, website: document.getElementById('website').value, address: document.getElementById('address').value };
+            let contacts = JSON.parse(localStorage.getItem('customContacts') || '[]');
+            contacts.push(contact);
+            localStorage.setItem('customContacts', JSON.stringify(contacts));
+            addContactToTable(contact);
+        }
+        function loadCustomContacts() {
+            const contacts = JSON.parse(localStorage.getItem('customContacts') || '[]');
+            contacts.forEach(contact => addContactToTable(contact));
+        }
+        function addContactToTable(contact) {
+            const tbody = document.querySelector('#contacts-table tbody');
+            if (!tbody) return;
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${contact.company}</td><td>${contact.ceo}</td><td><div>Phone: ${contact.phone || 'N/A'}</div><div>Email: ${contact.email || 'N/A'}</div><div>Website: ${contact.website || 'N/A'}</div><div>Address: ${contact.address || 'N/A'}</div></td><td>${contact.email ? `<button class="action-btn email-btn" data-email="${contact.email}"><i data-lucide="mail"></i></button>` : ''}${contact.phone ? `<button class="action-btn whatsapp-btn" data-phone="${contact.phone.replace(/\D/g, '')}"><i data-lucide="message-circle"></i></button>` : ''}</td>`;
+            tbody.appendChild(row);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            function copyToClipboard(text) { navigator.clipboard.writeText(text); }
+            function showCopyFeedback(element, message) { const originalText = element.textContent; element.textContent = message; setTimeout(() => { element.textContent = originalText; }, 1500); }
+            document.body.addEventListener('click', function(e) {
+                const copyEl = e.target.closest('.color-value, .copyable, .copy-map-link-btn');
+                if (copyEl) {
+                    const value = copyEl.getAttribute('data-value') || copyEl.getAttribute('data-map-url');
+                    copyToClipboard(value);
+                    showCopyFeedback(e.target, 'Copied!');
+                }
+            });
+        });
+
+
+// Function to handle banner image switching based on screen size
+function updateBannerImages() {
+    const dashboardBanner = document.querySelector('.dashboard-banner');
+    const sectionBanners = document.querySelectorAll('.section-banner');
+    
+    // Remove any existing classes
+    dashboardBanner.classList.remove('banner-desktop', 'banner-tablet', 'banner-mobile', 'banner-small');
+    
+    // Add appropriate class based on screen width
+    if (window.innerWidth <= 480) {
+        dashboardBanner.classList.add('banner-small');
+        sectionBanners.forEach(banner => banner.classList.add('banner-small'));
+    } else if (window.innerWidth <= 768) {
+        dashboardBanner.classList.add('banner-mobile');
+        sectionBanners.forEach(banner => banner.classList.add('banner-mobile'));
+    } else if (window.innerWidth <= 1024) {
+        dashboardBanner.classList.add('banner-tablet');
+        sectionBanners.forEach(banner => banner.classList.add('banner-tablet'));
+    } else {
+        dashboardBanner.classList.add('banner-desktop');
+        sectionBanners.forEach(banner => banner.classList.add('banner-desktop'));
+    }
+}
+
+// Call on load and resize
+window.addEventListener('load', updateBannerImages);
+window.addEventListener('resize', updateBannerImages);
+
+
+
+
+    </script>
+</body>
+</html>
